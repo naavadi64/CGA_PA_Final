@@ -1,5 +1,13 @@
 # CGA Programming Assignment #2
-nothing here yet
+Sprite Animation<br><br>
+
+Requirements list: (Priority)
+<ul>
+<li> Provide a background. (1)
+<li> Start with Wire Sponge doing his intro animation. (2)
+<li> Allow the user to control Wire Sponge. Wire Sponge can do the following actions:
+   <ul>
+</ul>
 
 
 <br><br>This is the end of the readme file.
