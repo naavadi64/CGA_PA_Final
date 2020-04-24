@@ -9,7 +9,7 @@ class Color:
         self.b = b
 
 
-class Point:
+class Vector:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -53,6 +53,18 @@ def ORwPixelByte(pxlb_1, pxlb_2):
     return pxlb
 
 
+class CharState(Enum):
+    idle = 0
+    walk = 1
+    leapBegin = 10
+    leap = 11
+    leapEnd = 12
+
+
+class DummyState(Enum):
+    pass
+
+
 class SpongeState(Enum):
     idle = 0
     walk = 1
@@ -65,8 +77,11 @@ class SpongeState(Enum):
     spinBegin = 100
     spin = 101
     spinEnd = 102
-    faceLeft = 5
-    faceRight = 6
+
+
+class Facing(Enum):
+    left = 5
+    right = 6
 
 
 class ImageObject:
@@ -165,6 +180,38 @@ class FrameCollection:
 
 
 class Character:
-    def __init__(self, position, velocity, frameId, curFrame, , ):
+    def __init__(self, position):
         self.position = position
-        self.velocity = velocity
+        self.velocity = Vector(0,0)
+        self.curState = CharState.idle
+        self.frameId = 0
+        self.curFrame = 0
+        self.sprites = []       # Frame collection
+        self.spritesId = 0
+        self.facing = Facing.right
+
+    def setState(self, state, sprId):
+        self.curState = state
+        self.spritesId = sprId
+        self.curFrame = 0
+        self.frameId = 0
+
+    def nextFrame(self):
+        self.curFrame += 1
+        if self.curFrame == self.sprites[self.spritesId].frames[self.frameId].framing_time:
+            self.frameId += 1
+            if self.frameId == self.sprites[self.spritesId].num_frame:
+                self.frameId = 0
+            self.curFrame = 0
+
+    def update(self):
+        pass  # ini untuk karakter biasa/dummy/whatever, disini buat skema nya sesuai finite machine (FSM) karakternya
+
+class WireSponge(Character):
+    def __init__(self, position):
+        super().__init__(position)
+        self.curState = SpongeState.idle
+
+    def update(self):
+        pass # disini buat sesuai FSM karakter si sponge nya
+
