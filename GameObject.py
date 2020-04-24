@@ -143,7 +143,7 @@ class ImageObject:
                 idx += 3
 
 
-class Sprite:
+class Frame:
     def __init__(self, xLeft, xRight, yTop, yBottom, anchor, time_framing):
         self.xLeft = xLeft
         self.xRight = xRight
@@ -154,15 +154,17 @@ class Sprite:
         self.time_framing = time_framing
 
 
-class SpriteCollection:
+class FrameCollection:
     def __init__(self):
-        self.sprites = []
-        self.num_frame = len(self.sprites)
+        self.frames = []
+        self.num_frame = len(self.frames)
 
-    def insert(self, sprite):
-        self.sprites.append(sprite)
-        self.num_frame = len(self.sprites)
+    def insert(self, frame):
+        self.frames.append(frame)
+        self.num_frame = len(self.frames)
 
 
 class Character:
-    def __init__(self):
+    def __init__(self, position, velocity, frameId, curFrame, , ):
+        self.position = position
+        self.velocity = velocity
