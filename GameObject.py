@@ -150,6 +150,7 @@ class Sprite:
         self.yTop = yTop
         self.yBottom = yBottom
         self.anchor = anchor
+        self.id = None
         self.time_framing = time_framing
 
 
@@ -161,3 +162,7 @@ class SpriteCollection:
     def insert(self, sprite):
         self.sprites.append(sprite)
         self.num_frame = len(self.sprites)
+
+
+class Character:
+    def __init__(self):
