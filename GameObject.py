@@ -22,6 +22,7 @@ def ANDColor(color1, color2):
     clr.b = color1.b & color2.b
     return clr
 
+
 def ANDwPixelByte(pxlb_1, pxlb_2):
     pxlb = bytes()
     if len(pxlb_1) <= len(pxlb_2):
@@ -32,12 +33,14 @@ def ANDwPixelByte(pxlb_1, pxlb_2):
             pxlb += bytes([pxlb_2[i] & pxlb_1[i]])
     return pxlb
 
+
 def ORColor(color1, color2):
     clr = Color(0,0,0)
     clr.r = color1.r | color2.r
     clr.g = color1.g | color2.g
     clr.b = color1.b | color2.b
     return clr
+
 
 def ORwPixelByte(pxlb_1, pxlb_2):
     pxlb = bytes()
@@ -48,6 +51,7 @@ def ORwPixelByte(pxlb_1, pxlb_2):
         for i in range(len(pxlb_2)):
             pxlb += bytes([pxlb_2[i] | pxlb_1[i]])
     return pxlb
+
 
 class SpongeState(Enum):
     idle = 0
@@ -78,14 +82,14 @@ class ImageObject:
             print("File not succesfully loaded")
             exit()
 
-    def get_color(self, x, y, width=None, height=None):
+    def get_color(self, x, y, width=0, height=0):
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
             y = self.height - 1
         idx = y * self.width + x
         idx *= 3
-        if width is None and height is None:
+        if width == 0 and height == 0:
             return Color(self.data[idx], self.data[idx + 1], self.data[idx + 2])
         clr = []
         for j in range(height):
@@ -97,14 +101,14 @@ class ImageObject:
                 idx += 3
         return clr
 
-    def get_pixel_bytes(self, x, y, width=None, height=None):
+    def get_pixel_bytes(self, x, y, width=0, height=0):
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
             y = self.height - 1
         idx = y * self.width + x
         idx *= 3
-        if width is None and height is None:
+        if width == 0 and height == 0:
             return bytes([self.data[idx], self.data[idx + 1], self.data[idx + 2]])
         pxl = bytes()
         for j in range(height):
@@ -116,14 +120,14 @@ class ImageObject:
                 idx += 3
         return pxl
 
-    def set_color(self, x, y, color, width=None, height=None):
+    def set_color(self, x, y, color, width=0, height=0):
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
             y = self.height - 1
         idx = y * self.width + x
         idx *= 3
-        if width is None and height is None:
+        if width == 0 and height == 0:
             self.data[idx] = bytes([color.r])
             self.data[idx + 1] = bytes([color.g])
             self.data[idx + 2] = bytes([color.b])
