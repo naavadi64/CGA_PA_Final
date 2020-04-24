@@ -3,6 +3,9 @@ from enum import Enum
 
 
 class Color:
+    '''
+    Class color. Perlu dijelasin? RGB.
+    '''
     def __init__(self, r, g, b):
         self.r = r
         self.g = g
@@ -10,12 +13,21 @@ class Color:
 
 
 class Vector:
+    '''
+        Vector bisa dijadikan point ataupun velocity
+    '''
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
 
 def ANDColor(color1, color2):
+    '''
+    Bitwise operation antara dua warna tiap channel warnanya (RGB)
+    :param color1: color 1 sesuai class GameObject.Color
+    :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
+    :return: satu color yang udah di bitwise AND
+    '''
     clr = Color(0,0,0)
     clr.r = color1.r & color2.r
     clr.g = color1.g & color2.g
@@ -24,6 +36,14 @@ def ANDColor(color1, color2):
 
 
 def ANDwPixelByte(pxlb_1, pxlb_2):
+    '''
+    Bitwise operation antara dua data pixel (bisa dibilang warna) dalam bentuk bytes. Data bisa lebih dari satu pixel
+    yang dicompare. Contoh: satu string bytes yang mempresentasikan sebuah gambar atau garis, di bitwise dengan pixel
+    byte lainnya tergantung size siapa yang lebih kecil.
+    :param pxlb_1: data bytes pixel RBB order. Bisa lebih dari satu.
+    :param pxlb_2: data bytes pixel RGB order yang ingin di bitwise. Bisa lebih dari satu.
+    :return: satu data pixel (3 bytes) jika kedua param cuma satu pixel juga. > 3 bytes jika banyak.
+    '''
     pxlb = bytes()
     if len(pxlb_1) <= len(pxlb_2):
         for i in range(len(pxlb_1)):
@@ -35,6 +55,12 @@ def ANDwPixelByte(pxlb_1, pxlb_2):
 
 
 def ORColor(color1, color2):
+    '''
+    Bitwise operation antara dua warna tiap channel warnanya (RGB)
+    :param color1: color 1 sesuai class GameObject.Color
+    :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
+    :return: satu color yang udah di bitwise OR
+    '''
     clr = Color(0,0,0)
     clr.r = color1.r | color2.r
     clr.g = color1.g | color2.g
@@ -43,6 +69,14 @@ def ORColor(color1, color2):
 
 
 def ORwPixelByte(pxlb_1, pxlb_2):
+    '''
+    Bitwise operation antara dua data pixel (bisa dibilang warna) dalam bentuk bytes. Data bisa lebih dari satu pixel
+    yang dicompare. Contoh: satu string bytes yang mempresentasikan sebuah gambar atau garis, di bitwise dengan pixel
+    byte lainnya tergantung size siapa yang lebih kecil.
+    :param pxlb_1: data bytes pixel RBB order. Bisa lebih dari satu.
+    :param pxlb_2: data bytes pixel RGB order yang ingin di bitwise. Bisa lebih dari satu.
+    :return: satu data pixel (3 bytes) jika kedua param cuma satu pixel juga. > 3 bytes jika banyak.
+    '''
     pxlb = bytes()
     if len(pxlb_1) <= len(pxlb_2):
         for i in range(len(pxlb_1)):
@@ -54,6 +88,9 @@ def ORwPixelByte(pxlb_1, pxlb_2):
 
 
 class CharState(Enum):
+    '''
+    State buat karakter biasa atau pun dummy
+    '''
     idle = 0
     walk = 1
     leapBegin = 10
@@ -62,10 +99,16 @@ class CharState(Enum):
 
 
 class DummyState(Enum):
+    '''
+    State untuk dummy
+    '''
     pass
 
 
 class SpongeState(Enum):
+    '''
+    State khusus untuk Wire Sponge
+    '''
     idle = 0
     walk = 1
     leapBegin = 10
@@ -80,24 +123,44 @@ class SpongeState(Enum):
 
 
 class Facing(Enum):
+    '''
+    Arah pandangan karakter, kanan atau kiri
+    '''
     left = 5
     right = 6
 
 
 class ImageObject:
+    '''
+    Sebuah raw image yang dibuat untuk load background, spritesheet, dsb. Koordinat raw image dimulai dari TOP-LEFT yang
+    berbeda dengan koordinat screen pyglet BOTTOM-LEFT. Don't get confused in practice.
+    '''
     def __init__(self, path):
+        '''
+        Constructor untuk initialize raw image baru dengan path dan filename yang tersedia.
+        :param path: Filename in current directory or full path with filename
+        '''
         self.path = path
         try:
             img = pyglet.image.load(filename=path).get_image_data()
             self.width = img.width
             self.height = img.height
-            self.pitch = -self.width * len('RGB')
-            self.data = img.get_data(fmt='RGB', pitch=self.pitch)
+            self.pitch = -self.width * len('RGB')  # Number of bytes per row
+            self.data = img.get_data(fmt='RGB', pitch=self.pitch)  # Pixels bytes data
         except FileNotFoundError:
             print("File not succesfully loaded")
             exit()
 
     def get_color(self, x, y, width=0, height=0):
+        '''
+        Ambil color dengan koordinat image yang ditentukan. Kalau ingin mengambil dalam satu area kotak/garis, width dan
+        height harus ditentukan
+        :param x: koordinat x dari LEFT
+        :param y: koordinat y dari TOP
+        :param width: panjang area jika perlu satu Kotak (Rectangle)
+        :param height: lebar area jika perlu satu Kotak (Rectangle)
+        :return: satu color jika width dan height tidak di specified. Array of color jika di specified.
+        '''
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
@@ -117,6 +180,15 @@ class ImageObject:
         return clr
 
     def get_pixel_bytes(self, x, y, width=0, height=0):
+        '''
+        Ambil color dalam bentuk bytes of pixels dengan koordinat image yang ditentukan. Kalau ingin mengambil dalam
+        satu area kotak/garis, width dan height harus ditentukan
+        :param x: koordinat x dari LEFT
+        :param y: koordinat y dari TOP
+        :param width: panjang area jika perlu satu Kotak (Rectangle)
+        :param height: lebar area jika perlu satu Kotak (Rectangle)
+        :return: string bytes of pixel (size-nya kelipatan 3, RGB)
+        '''
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
@@ -136,6 +208,15 @@ class ImageObject:
         return pxl
 
     def set_color(self, x, y, color, width=0, height=0):
+        '''
+        Taruh warna di koordinat yang ditentukan. Bisa mengubah satu area yang ditentukan width dan height nya
+        :param x: koordinat x dari LEFT
+        :param y: koordinat y dari TOP
+        :param color: warna yang ingin ditaruh sesuai class GameObject.Color
+        :param width: panjang area jika perlu satu area Kotak (Rectangle)
+        :param height: lebar area jika perlu satu area Kotak (Rectangle)
+        :return: tidak ada, void
+        '''
         if x >= self.width:
             x = self.width - 1
         if y >= self.height:
@@ -159,7 +240,19 @@ class ImageObject:
 
 
 class Frame:
+    '''
+    Frame bertindak seperti grid yang memotong dan memisahkan pada bagian image untuk sprite yang akan di apply.
+    '''
     def __init__(self, xLeft, xRight, yTop, yBottom, anchor, time_framing):
+        '''
+
+        :param xLeft:
+        :param xRight:
+        :param yTop:
+        :param yBottom:
+        :param anchor:
+        :param time_framing:
+        '''
         self.xLeft = xLeft
         self.xRight = xRight
         self.yTop = yTop
@@ -170,11 +263,19 @@ class Frame:
 
 
 class FrameCollection:
+    '''
+    Bertindak sebagai penampung Frames. Dipakai sebagai set frame karena akan dianimasikan sesuai state karakternya
+    '''
     def __init__(self):
         self.frames = []
         self.num_frame = len(self.frames)
 
     def insert(self, frame):
+        '''
+        memasukkan frame baru tanpa menghapus yang ada.
+        :param frame: frame, sesuai class GameObject.Frame
+        :return: tidak ada, void
+        '''
         self.frames.append(frame)
         self.num_frame = len(self.frames)
 
@@ -206,6 +307,7 @@ class Character:
 
     def update(self):
         pass  # ini untuk karakter biasa/dummy/whatever, disini buat skema nya sesuai finite machine (FSM) karakternya
+
 
 class WireSponge(Character):
     def __init__(self, position):
