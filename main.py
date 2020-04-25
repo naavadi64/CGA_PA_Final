@@ -5,7 +5,13 @@ sprsht = ImageObject("spritesheet.png")
 sprmask = ImageObject("spritesheet_mask.png")
 wire_sponge = WireSponge(Vector(800, 480))
 img_draw = bg
-img_display = pyglet.image.ImageData
+img_display = pyglet.image.ImageData(
+    img_draw.width,
+    img_draw.height,
+    'RGB',
+    img_draw.get_bytes(),
+    img_draw.pitch
+)
 
 
 def initialize_sprite():
@@ -53,12 +59,10 @@ def put_sprite(character):
 
 def display_img():
     put_sprite(wire_sponge)
-    img_display = pyglet.image.ImageData(
-        img_draw.width,
-        img_draw.height,
+    img_display.set_data(
         'RGB',
-        img_draw.get_bytes(),
-        img_draw.pitch
+        img_draw.pitch,
+        img_draw.get_bytes()
     )
     img_display.blit(0,0)
 
@@ -74,6 +78,8 @@ class CGA(pyglet.window.Window):
 
     def on_draw(self):
         self.clear()
+        wire_sponge.update()
+        display_img()
 
 
 initialize_sprite()
