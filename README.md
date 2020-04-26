@@ -7,7 +7,6 @@ Requirements list: (Priority)
 <li> Start with Wire Sponge doing his intro animation. (2)
 <li> Allow the user to control Wire Sponge. Wire Sponge can do the following actions:
    <ul>
-<<<<<<< HEAD
    <li>(1) Spin chain. This can only be done when Wire Sponge is on the ground.
       <ul>
       <li>(2) Wire Sponge spins his chain in front of him for a few seconds.
@@ -62,8 +61,6 @@ Requirements list: (Priority)
       </ul>
    </ul>
 <li>(2) Use the proper animations
-=======
->>>>>>> ef087fef38cd3630ad5cb8fe8f84687a2161e40e
 </ul>
    
 .gitignore file is to avoid uploading the unnecessary file from your workspace
