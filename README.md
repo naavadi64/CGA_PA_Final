@@ -1,7 +1,7 @@
-# CGA Programming Assignment #2
-Sprite Animation<br><br>
+# CGA Programming Assignment #2 - Sprite Animation
 Animates the Wire Sponge character from Megaman X2.<br>
-Note you'll need to find the sprite sheet separately since we don't own it.<br>
+Note that you'll need to find the sprite sheet and background separately since we don't own it.<br>
+Place the files within the repository folder and edit the main.py variables accordingly.<br>
 
 <hr>
 Requirements list: (Priority)
