@@ -75,14 +75,20 @@ def update(dt):
 class CGA(pyglet.window.Window):
     def __init__(self):
         super().__init__(width=bg.width, height=bg.height, visible=True)
+        initialize_sprite()
 
     def on_draw(self):
         self.clear()
         wire_sponge.update()
         display_img()
 
+    def on_key_press(self, symbol, modifiers):
+        pass
 
-initialize_sprite()
+    def on_key_release(self, symbol, modifiers):
+        pass
+
+
 pyglet.clock.schedule_interval(update, 0.5)
 cga = CGA()
 pyglet.app.run()
