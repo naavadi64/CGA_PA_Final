@@ -67,17 +67,18 @@ def display_img():
     img_display.blit(0,0)
 
 
-def update(dt):
-    wire_sponge.update()
-    display_img()
 
 
 class CGA(pyglet.window.Window):
     def __init__(self):
         super().__init__(width=bg.width, height=bg.height, visible=True)
         initialize_sprite()
+        pyglet.clock.schedule_interval(self.update, 0.5)
 
     def on_draw(self):
+        pass
+
+    def update(self, dt):
         self.clear()
         wire_sponge.update()
         display_img()
@@ -89,6 +90,5 @@ class CGA(pyglet.window.Window):
         pass
 
 
-pyglet.clock.schedule_interval(update, 0.5)
 cga = CGA()
 pyglet.app.run()
