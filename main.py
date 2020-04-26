@@ -1,8 +1,8 @@
 from GameObject import *
 
-bg = ImageObject("spongy_wired.jpg")
-sprsht = ImageObject("spritesheet.png")
-sprmask = ImageObject("spritesheet_mask.png")
+bg = ImageObject("resource/spongy_wired.jpg")
+sprsht = ImageObject("resource/spritesheet.png")
+sprmask = ImageObject("resource/spritesheet_mask.png")
 wire_sponge = WireSponge(Vector(800, 480))
 img_draw = bg
 img_display = pyglet.image.ImageData(
