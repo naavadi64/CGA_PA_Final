@@ -110,6 +110,7 @@ class SpongeState(Enum):
     State khusus untuk Wire Sponge
     '''
     idle = 0
+    intro = 1
     leapBegin = 10
     leap = 11
     leapEnd = 12
