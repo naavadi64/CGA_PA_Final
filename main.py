@@ -74,7 +74,7 @@ def update(dt):
 
 class CGA(pyglet.window.Window):
     def __init__(self):
-        super().__init__(width=989, height=640, visible=True)
+        super().__init__(width=bg.width, height=bg.height, visible=True)
 
     def on_draw(self):
         self.clear()
