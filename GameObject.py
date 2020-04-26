@@ -87,7 +87,7 @@ def ORwPixelByte(pxlb_1, pxlb_2):
     return pxlb
 
 
-class CharState(Enum):
+class DummyState(Enum):
     '''
     State buat karakter biasa atau pun dummy
     '''
@@ -98,11 +98,13 @@ class CharState(Enum):
     jumpEnd = 12
 
 
-class DummyState(Enum):
+class MortalState(Enum):
     '''
-    State untuk dummy
+    State untuk object mortal
     '''
-    pass
+    idle = 0
+    hit = 2
+    destruct = 3
 
 
 class SpongeState(Enum):
@@ -304,11 +306,11 @@ class FrameCollection:
         self.num_frame = len(self.frames)
 
 
-class Character:
+class MortalObject:
     def __init__(self, position):
         self.position = position
         self.velocity = Vector(0,0)
-        self.curState = CharState.idle
+        self.curState = MortalState.idle
         self.frameId = 0
         self.curTimeFrame = 0
         self.sprites = []       # Frame collection
@@ -335,10 +337,11 @@ class Character:
             self.curTimeFrame = 0
 
     def update(self):
-        pass  # ini untuk karakter biasa/dummy/whatever, disini buat skema nya sesuai finite machine (FSM) karakternya
+        pass  # ini untuk destructible object biasa/dummy/whatever, disini buat skema nya sesuai
+                # finite machine (FSM) karakternya
 
 
-class WireSponge(Character):
+class WireSponge(MortalObject):
     def __init__(self, position, facing=Facing.left):
         super().__init__(position)
         self.curState = SpongeState.idle
@@ -351,3 +354,9 @@ class WireSponge(Character):
             self.setState(SpongeState.idle)
             self.velocity.x = 0
             self.velocity.y = 0
+
+
+class ChainSponge(MortalObject):
+    def __init__(self, position):
+        super().__init__(position)
+
