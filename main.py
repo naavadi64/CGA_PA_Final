@@ -1,3 +1,7 @@
+import imgui
+import imgui.core
+from imgui.integrations.pyglet import PygletRenderer
+
 from GameObject import *
 
 bg = ImageObject("resource/spongy_wired.jpg")
@@ -67,13 +71,45 @@ def display_img():
     img_display.blit(0,0)
 
 
+class Controls:  # --UI and Controls--
+    def __init__(self, window):
+        imgui.create_context()
+        self.renderer = PygletRenderer(window)
+        self.impl = PygletRenderer(window)
+        imgui.new_frame()
+        imgui.end_frame()
+
+    def render_ui(self):
+        imgui.render()
+        self.impl.render(imgui.get_draw_data())
+
+        # --This is where the fun begins--
+        imgui.new_frame()
+        if imgui.begin_main_menu_bar():
+
+            if imgui.begin_menu("Application", True):
+                selected_quit, clicked_quit = imgui.menu_item(
+                    "Quit", "", False, True
+                )
+                if clicked_quit:
+                    exit(1)
+                if selected_quit:
+                    pass
+
+                imgui.end_menu()
+
+        imgui.end_main_menu_bar()
+        imgui.end_frame()
 
 
-class CGA(pyglet.window.Window):
+class Application(pyglet.window.Window):
+
     def __init__(self):
-        super().__init__(width=bg.width, height=bg.height, visible=True)
+        super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
-        pyglet.clock.schedule_interval(self.update, 0.5)
+        pyglet.clock.schedule_interval(self.update, 1/60)
+        self.window_object = self
+        self.control_ui = Controls(self.window_object)  # UI class call, check Controls section
 
     def on_draw(self):
         pass
@@ -82,6 +118,7 @@ class CGA(pyglet.window.Window):
         self.clear()
         wire_sponge.update()
         display_img()
+        self.control_ui.render_ui()
 
     def on_key_press(self, symbol, modifiers):
         pass
@@ -90,5 +127,5 @@ class CGA(pyglet.window.Window):
         pass
 
 
-cga = CGA()
+app = Application()
 pyglet.app.run()
