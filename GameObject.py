@@ -3,9 +3,9 @@ from enum import Enum
 
 
 class Color:
-    '''
+    """
     Class color. Perlu dijelasin? RGB.
-    '''
+    """
     def __init__(self, r, g, b):
         self.r = r
         self.g = g
@@ -13,21 +13,21 @@ class Color:
 
 
 class Vector:
-    '''
+    """
         Vector bisa dijadikan point ataupun velocity
-    '''
+    """
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
 
 def ANDColor(color1, color2):
-    '''
+    """
     Bitwise operation antara dua warna tiap channel warnanya (RGB)
     :param color1: color 1 sesuai class GameObject.Color
     :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
     :return: satu color yang udah di bitwise AND
-    '''
+    """
     clr = Color(0,0,0)
     clr.r = color1.r & color2.r
     clr.g = color1.g & color2.g
@@ -36,14 +36,14 @@ def ANDColor(color1, color2):
 
 
 def ANDwPixelByte(pxlb_1, pxlb_2):
-    '''
+    """
     Bitwise operation antara dua data pixel (bisa dibilang warna) dalam bentuk bytearray. Data bisa lebih dari satu pixel
     yang dicompare. Contoh: satu string bytearray yang mempresentasikan sebuah gambar atau garis, di bitwise dengan pixel
     byte lainnya tergantung size siapa yang lebih kecil.
     :param pxlb_1: data bytearray pixel RBB order. Bisa lebih dari satu.
     :param pxlb_2: data bytearray pixel RGB order yang ingin di bitwise. Bisa lebih dari satu.
     :return: satu data pixel (3 bytearray) jika kedua param cuma satu pixel juga. > 3 bytearray jika banyak.
-    '''
+    """
     pxlb = bytearray()
     if len(pxlb_1) <= len(pxlb_2):
         for i in range(len(pxlb_1)):
@@ -55,12 +55,12 @@ def ANDwPixelByte(pxlb_1, pxlb_2):
 
 
 def ORColor(color1, color2):
-    '''
+    """
     Bitwise operation antara dua warna tiap channel warnanya (RGB)
     :param color1: color 1 sesuai class GameObject.Color
     :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
     :return: satu color yang udah di bitwise OR
-    '''
+    """
     clr = Color(0,0,0)
     clr.r = color1.r | color2.r
     clr.g = color1.g | color2.g
@@ -69,14 +69,14 @@ def ORColor(color1, color2):
 
 
 def ORwPixelByte(pxlb_1, pxlb_2):
-    '''
+    """
     Bitwise operation antara dua data pixel (bisa dibilang warna) dalam bentuk bytearray. Data bisa lebih dari satu pixel
     yang dicompare. Contoh: satu string bytearray yang mempresentasikan sebuah gambar atau garis, di bitwise dengan pixel
     byte lainnya tergantung size siapa yang lebih kecil.
     :param pxlb_1: data bytearray pixel RBB order. Bisa lebih dari satu.
     :param pxlb_2: data bytearray pixel RGB order yang ingin di bitwise. Bisa lebih dari satu.
     :return: satu data pixel (3 bytearray) jika kedua param cuma satu pixel juga. > 3 bytearray jika banyak.
-    '''
+    """
     pxlb = bytearray()
     if len(pxlb_1) <= len(pxlb_2):
         for i in range(len(pxlb_1)):
@@ -88,9 +88,9 @@ def ORwPixelByte(pxlb_1, pxlb_2):
 
 
 class DummyState(Enum):
-    '''
+    """
     State buat karakter biasa atau pun dummy
-    '''
+    """
     idle = 0
     walk = 1
     jumpBegin = 10
@@ -99,20 +99,36 @@ class DummyState(Enum):
 
 
 class MortalState(Enum):
-    '''
+    """
     State untuk object mortal
-    '''
+    """
     idle = 0
     hit = 2
     destruct = 3
 
 
+class ChainState(Enum):
+    """
+    State untuk chain Sponge
+    """
+    thrownH = 30
+    thrownV = 40
+    releaseH = 31
+    releaseV = 41
+    fallIntro = 999
+    releaseIntro = 998
+
+
 class SpongeState(Enum):
-    '''
+    """
     State khusus untuk Wire Sponge
-    '''
+    """
     idle = 0
-    intro = 1
+    introChainFall = 60
+    introChainWait = 61
+    introChainFallEnd = 62
+    introSpin = 63
+    introCharge = 64
     leapBegin = 10
     leap = 11
     leapEnd = 12
@@ -142,7 +158,6 @@ class ImageObject:
         Constructor untuk initialize raw image baru dengan path dan filename yang tersedia.
         :param path: Filename in current directory or full path with filename
         '''
-        self.path = path
         try:
             img = pyglet.image.load(filename=path).get_image_data()
             self.width = img.width
@@ -330,7 +345,7 @@ class MortalObject:
 
     def nextFrame(self):
         self.curTimeFrame += 1
-        if self.curTimeFrame == self.sprites[self.spritesId].frames[self.frameId].time_framing:
+        if self.curTimeFrame >= self.sprites[self.spritesId].frames[self.frameId].time_framing:
             self.frameId += 1
             if self.frameId == self.sprites[self.spritesId].num_frame:
                 self.frameId = 0
@@ -342,18 +357,44 @@ class MortalObject:
 
 
 class WireSponge(MortalObject):
-    def __init__(self, position, facing=Facing.left):
+    def __init__(self, position=Vector(843, 0), facing=Facing.left):
         super().__init__(position)
+        self.spin_counter = 0
+        self.position = Vector(843, 0)
         self.curState = SpongeState.idle
         self.facing = facing
 
     def update(self):
         # disini buat sesuai FSM karakter si sponge nya
+        self.position.x += self.velocity.x
+        self.position.y += self.velocity.y
+        self.nextFrame()
         if self.curState == SpongeState.idle:
-            self.nextFrame()
             self.setState(SpongeState.idle)
             self.velocity.x = 0
             self.velocity.y = 0
+        elif self.curState == SpongeState.introChainFall:
+            self.velocity.y = 15
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            if self.position.y + frame.yBottom - frame.anchor.y >= 482:  # Touch platform
+                self.setState(SpongeState.introChainWait)
+                self.velocity.y = 0
+                self.position.y = 482 - frame.yBottom + frame.anchor.y
+        elif self.curState == SpongeState.introChainWait:
+            if self.curTimeFrame == 0 and self.frameId == 0: # NOT COMPLETED
+                self.setState(SpongeState.introChainFallEnd)
+        elif self.curState == SpongeState.introChainFallEnd:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.introSpin)
+        elif self.curState == SpongeState.introSpin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.spin_counter += 1
+            if self.spin_counter == 10:
+                self.spin_counter = 0
+                self.setState(SpongeState.introCharge)
+        elif self.curState == SpongeState.introCharge:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.idle)
 
 
 class ChainSponge(MortalObject):
