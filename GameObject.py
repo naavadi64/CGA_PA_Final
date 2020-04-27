@@ -130,8 +130,9 @@ class SpongeState(Enum):
     introSpin = 63
     introCharge = 64
     leapBegin = 10
-    leap = 11
-    leapEnd = 12
+    leapUp = 11
+    leapDown = 12
+    leapEnd = 13
     throwHrzBegin = 200
     throwHrz = 201
     throwHrzEnd = 202
@@ -327,6 +328,7 @@ class MortalObject:
         self.velocity = Vector(0,0)
         self.curState = MortalState.idle
         self.frameId = 0
+        self.on_ground = False
         self.curTimeFrame = 0
         self.sprites = []       # Frame collection
         self.spritesId = 0
@@ -370,9 +372,9 @@ class WireSponge(MortalObject):
         self.position.y += self.velocity.y
         self.nextFrame()
         if self.curState == SpongeState.idle:
-            self.setState(SpongeState.idle)
-            self.velocity.x = 0
-            self.velocity.y = 0
+            pass
+
+        #intro
         elif self.curState == SpongeState.introChainFall:
             self.velocity.y = 15
             frame = self.sprites[self.spritesId].frames[self.frameId]
@@ -380,21 +382,48 @@ class WireSponge(MortalObject):
                 self.setState(SpongeState.introChainWait)
                 self.velocity.y = 0
                 self.position.y = 482 - frame.yBottom + frame.anchor.y
+                self.on_ground = True
         elif self.curState == SpongeState.introChainWait:
             if self.curTimeFrame == 0 and self.frameId == 0: # NOT COMPLETED
                 self.setState(SpongeState.introChainFallEnd)
         elif self.curState == SpongeState.introChainFallEnd:
-            if self.curTimeFrame == 0 and self.frameId == 0:
+            if self.curTimeFrame == 0:
                 self.setState(SpongeState.introSpin)
         elif self.curState == SpongeState.introSpin:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.spin_counter += 1
-            if self.spin_counter == 10:
+            if self.spin_counter == 6:
                 self.spin_counter = 0
                 self.setState(SpongeState.introCharge)
         elif self.curState == SpongeState.introCharge:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.idle)
+
+        # State by input control
+        elif self.curState == SpongeState.leapBegin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.velocity.y = -10
+                if self.facing.left:
+                    self.velocity.x = -10
+                else:
+                    self.velocity.x = 10
+                self.setState(SpongeState.leapUp)
+        elif self.curState == SpongeState.leapUp:
+            self.velocity.y += 1
+            if self.velocity.y >= 1:
+                self.setState(SpongeState.leapDown)
+        elif self.curState == SpongeState.leapDown:
+            self.velocity.y += 1
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            if self.position.y + frame.yBottom - frame.anchor.y >= 482:  # Touch platform
+                self.position.y = 482 - frame.yBottom + frame.anchor.y
+                self.velocity.x = 0
+                self.velocity.y = 0
+                self.setState(SpongeState.leapEnd)
+        elif self.curState == SpongeState.leapEnd:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.idle)
+                self.on_ground = True
 
 
 class ChainSponge(MortalObject):

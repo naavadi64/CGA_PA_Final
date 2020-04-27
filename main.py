@@ -2,7 +2,7 @@ import imgui
 import imgui.core
 from copy import copy
 from imgui.integrations.pyglet import PygletRenderer
-
+from pyglet.window import  key, mouse
 from GameObject import *
 
 bg = ImageObject("resource/spongy_wired.jpg")
@@ -20,8 +20,9 @@ img_display = pyglet.image.ImageData(
 
 
 def initialize_sprite():
+    # Idle
     SpongeIdle = FrameCollection(SpongeState.idle)
-    SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 58), 1))
+    SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
 
     # Intro
     SpongeIntroChainFall = FrameCollection(SpongeState.introChainFall)
@@ -41,15 +42,33 @@ def initialize_sprite():
     SpongeIntroSpin.insert(Frame(365, 418, 23, 82, Vector(393, 55), 1))
     SpongeIntroSpin.insert(Frame(551, 603, 21, 80, Vector(578, 53), 1))
     SpongeIntroCharge.insert(Frame(602, 657, 25, 82, Vector(628, 58), 3))
-    SpongeIntroCharge.insert(Frame(663, 720, 30, 81, Vector(690, 60), 60))
+    SpongeIntroCharge.insert(Frame(663, 720, 30, 81, Vector(690, 57), 40))
     SpongeIntroCharge.insert(Frame(602, 657, 25, 82, Vector(628, 58), 3))
 
+    # Leap
+    SpongeLeapBegin = FrameCollection(SpongeState.leapBegin)
+    SpongeLeapUp = FrameCollection(SpongeState.leapUp)
+    SpongeLeapDown = FrameCollection(SpongeState.leapDown)
+    SpongeLeapEnd = FrameCollection(SpongeState.leapEnd)
+
+    SpongeLeapBegin.insert(Frame(419, 474, 111, 165, Vector(445, 142), 4))
+    SpongeLeapBegin.insert(Frame(82, 137, 26, 85, Vector(108, 60), 2))
+    SpongeLeapUp.insert(Frame(283, 336, 103, 168, Vector(308, 132), 1))
+    SpongeLeapDown.insert(Frame(346, 406, 105, 165, Vector(374, 138), 1))
+    SpongeLeapEnd.insert(Frame(82, 137, 26, 85, Vector(108, 60), 2))
+    SpongeLeapEnd.insert(Frame(419, 474, 111, 165, Vector(445, 142), 4))
+
+    # Initializing the sprites
     wire_sponge.insert(SpongeIdle)
     wire_sponge.insert(SpongeIntroChainFall)
     wire_sponge.insert(SpongeIntroChainWait)
     wire_sponge.insert(SpongeIntroChainFallEnd)
     wire_sponge.insert(SpongeIntroSpin)
     wire_sponge.insert(SpongeIntroCharge)
+    wire_sponge.insert(SpongeLeapBegin)
+    wire_sponge.insert(SpongeLeapUp)
+    wire_sponge.insert(SpongeLeapDown)
+    wire_sponge.insert(SpongeLeapEnd)
 
     wire_sponge.setState(SpongeState.introChainFall)
 
@@ -130,7 +149,7 @@ class Application(pyglet.window.Window):
     def __init__(self):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
-        pyglet.clock.schedule_interval(self.update, 1/60)
+        pyglet.clock.schedule_interval(self.update, 1/30)
         self.window_object = self
         self.control_ui = Controls(self.window_object)  # UI class call, check Controls section
 
@@ -144,7 +163,9 @@ class Application(pyglet.window.Window):
         self.control_ui.render_ui()
 
     def on_key_press(self, symbol, modifiers):
-        pass
+        if symbol == key.SPACE and wire_sponge.on_ground:
+            wire_sponge.setState(SpongeState.leapBegin)
+            wire_sponge.on_ground = False
 
     def on_key_release(self, symbol, modifiers):
         pass
