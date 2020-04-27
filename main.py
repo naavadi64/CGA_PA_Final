@@ -16,14 +16,33 @@ img_display = pyglet.image.ImageData(
 
 def initialize_sprite():
     SpongeIdle = FrameCollection(SpongeState.idle)
-    SpongeIdle.insert(
-        Frame(
-            83, 136, 27, 84,
-            Vector(110, 57),
-            1
-        )
-    )
+    SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 58), 1))
+
+    # Intro
+    SpongeIntroChainFall = FrameCollection(SpongeState.introChainFall)
+    SpongeIntroChainFallEnd = FrameCollection(SpongeState.introChainFallEnd)
+    SpongeIntroSpin = FrameCollection(SpongeState.introSpin)
+    SpongeIntroCharge = FrameCollection(SpongeState.introCharge)
+
+    SpongeIntroChainFall.insert(Frame(218, 268, 100, 169, Vector(250, 133), 1))
+    SpongeIntroChainFallEnd.insert(Frame(4, 63, 23, 86, Vector(38, 57), 1))
+    SpongeIntroChainFallEnd.insert(Frame(82, 137, 26, 85, Vector(108, 58), 1))
+    SpongeIntroSpin.insert(Frame(498, 549, 12, 80, Vector(524, 53), 1))
+    SpongeIntroSpin.insert(Frame(221, 285, 19, 84, Vector(260, 57), 1))
+    SpongeIntroSpin.insert(Frame(288, 254, 25, 84, Vector(329, 57), 1))
+    SpongeIntroSpin.insert(Frame(149, 215, 26, 85, Vector(189, 58), 1))
+    SpongeIntroSpin.insert(Frame(426, 490, 21, 80, Vector(465, 53), 1))
+    SpongeIntroSpin.insert(Frame(365, 418, 23, 82, Vector(393, 55), 1))
+    SpongeIntroSpin.insert(Frame(551, 603, 21, 80, Vector(578, 53), 1))
+    SpongeIntroCharge.insert(Frame(83, 136, 27, 84, Vector(110, 57), 1))
+    SpongeIntroCharge.insert(Frame(83, 136, 27, 84, Vector(110, 57), 1))
+    SpongeIntroCharge.insert(Frame(83, 136, 27, 84, Vector(110, 57), 1))
+
     wire_sponge.insert(SpongeIdle)
+    wire_sponge.insert(SpongeIntroChainFall)
+    wire_sponge.insert(SpongeIntroChainFallEnd)
+    wire_sponge.insert(SpongeIntroSpin)
+    wire_sponge.insert(SpongeIntroCharge)
 
 
 def put_sprite(character):
@@ -65,8 +84,6 @@ def display_img():
         img_draw.get_bytes()
     )
     img_display.blit(0,0)
-
-
 
 
 class CGA(pyglet.window.Window):
