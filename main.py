@@ -158,9 +158,14 @@ class Controls:  # --UI and Controls--
         imgui.end_frame()
 
         # --Imgui Window Variables--
-        self.showPlayerControls = False
-        self.showDummyControls = False
-        self.showTestWindow = False
+        # --Format: Window Boolean followed by its variables, separate each window with one end line.
+        self.showPlayerControls = False  #
+
+        self.showDummyControls = False  #
+
+        self.showTestWindow = False  #
+        self.test_checkbox = False
+        self.test_input_int = 0
 
     def render_ui(self):
         imgui.render()
@@ -168,23 +173,39 @@ class Controls:  # --UI and Controls--
         imgui.new_frame()
 
         # --Imgui Windows--
-        def player_controls():
-            if self.showPlayerControls:
-                pass
+        # --Note: Variables are defined in __init__ under Imgui Window Variables
+        if self.showPlayerControls:
+            pass
 
-        def dummy_controls():
-            if self.showDummyControls:
-                pass
+        if self.showDummyControls:
+            pass
 
-        def test_window():
-            if self.showTestWindow:
+        if self.showTestWindow:
+            imgui.begin("Test Window")
+            imgui.text("This is the test window.")
+            changed, self.test_checkbox = imgui.checkbox("Test Checkbox", self.test_checkbox)
+            if imgui.button("Test Button", 100, 20):
                 pass
-
+            changed, self.test_input_int = imgui.input_int("Integer Input Test", self.test_input_int)
+            imgui.end()
 
         # --This is where the fun begins--
         if imgui.begin_main_menu_bar():
 
             if imgui.begin_menu("Application", True):
+
+                selected_test, clicked_test = imgui.menu_item(
+                    "Test Window", "", self.showTestWindow, True
+                )
+                if clicked_test:
+                    if not self.showTestWindow:
+                        self.showTestWindow = True
+                    else:
+                        self.showTestWindow = False
+
+                if selected_test:
+                    pass
+
                 selected_quit, clicked_quit = imgui.menu_item(
                     "Quit", "", False, True
                 )
@@ -195,7 +216,7 @@ class Controls:  # --UI and Controls--
 
                 imgui.end_menu()
 
-            if imgui.begin_menu("Animate", True):
+            if imgui.begin_menu("Controls", True):
                 selected_reset, clicked_reset = imgui.menu_item(
                     "Reset All", "", False, True
                 )
@@ -239,8 +260,7 @@ class Application(pyglet.window.Window):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
         pyglet.clock.schedule_interval(self.update, 1/30)
-        self.window_object = self
-        self.control_ui = Controls(self.window_object)  # UI class call, check Controls section
+        self.control_ui = Controls(self)  # UI class call, check Controls section
 
     def on_draw(self):
         pass
