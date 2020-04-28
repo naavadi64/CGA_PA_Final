@@ -58,6 +58,17 @@ def initialize_sprite():
     SpongeLeapEnd.insert(Frame(82, 137, 26, 85, Vector(108, 60), 2))
     SpongeLeapEnd.insert(Frame(419, 474, 111, 165, Vector(445, 142), 4))
 
+    # Spin
+    SpongeSpin = FrameCollection(SpongeState.spin)
+
+    SpongeSpin.insert(Frame(498, 549, 12, 80, Vector(524, 53), 1))
+    SpongeSpin.insert(Frame(221, 285, 19, 84, Vector(260, 57), 1))
+    SpongeSpin.insert(Frame(288, 354, 25, 84, Vector(329, 57), 1))
+    SpongeSpin.insert(Frame(149, 215, 26, 85, Vector(189, 58), 1))
+    SpongeSpin.insert(Frame(426, 490, 21, 80, Vector(465, 53), 1))
+    SpongeSpin.insert(Frame(365, 418, 23, 82, Vector(393, 55), 1))
+    SpongeSpin.insert(Frame(551, 603, 21, 80, Vector(578, 53), 1))
+
     # Initializing the sprites
     wire_sponge.insert(SpongeIdle)
     wire_sponge.insert(SpongeIntroChainFall)
@@ -69,6 +80,7 @@ def initialize_sprite():
     wire_sponge.insert(SpongeLeapUp)
     wire_sponge.insert(SpongeLeapDown)
     wire_sponge.insert(SpongeLeapEnd)
+    wire_sponge.insert(SpongeSpin)
 
     wire_sponge.setState(SpongeState.introChainFall)
 
@@ -79,7 +91,7 @@ def put_sprite(character):
     sprite_width = frame.xRight - frame.xLeft
     sprite_height = frame.yBottom - frame.yTop
 
-    if character.facing.left:
+    if character.facing == Facing.left:
         spriteLeft = character.position.x - frame.anchor.x + frame.xLeft
         spriteTop = character.position.y - frame.anchor.y + frame.yTop
 
@@ -100,6 +112,29 @@ def put_sprite(character):
                     ORwPixelByte(
                         img_draw.get_pixel_bytearray(spriteLeft+i, spriteTop+j),
                         sprsht.get_pixel_bytearray(frame.xLeft+i, frame.yTop+j)
+                    )
+                )
+    else:
+        spriteLeft = character.position.x + frame.anchor.x - frame.xRight
+        spriteTop = character.position.y - frame.anchor.y + frame.yTop
+
+        for i in range(sprite_width):
+            for j in range(sprite_height):
+                img_draw.set_pixel_bytearray(
+                    spriteLeft + i, spriteTop + j,
+                    ANDwPixelByte(
+                        img_draw.get_pixel_bytearray(spriteLeft + i, spriteTop + j),
+                        sprmask.get_pixel_bytearray(frame.xRight - i, frame.yTop + j)
+                    )
+                )
+
+        for i in range(sprite_width):
+            for j in range(sprite_height):
+                img_draw.set_pixel_bytearray(
+                    spriteLeft + i, spriteTop + j,
+                    ORwPixelByte(
+                        img_draw.get_pixel_bytearray(spriteLeft + i, spriteTop + j),
+                        sprsht.get_pixel_bytearray(frame.xRight - i, frame.yTop + j)
                     )
                 )
 
@@ -166,6 +201,12 @@ class Application(pyglet.window.Window):
         if symbol == key.SPACE and wire_sponge.on_ground:
             wire_sponge.setState(SpongeState.leapBegin)
             wire_sponge.on_ground = False
+        elif symbol == key.X and wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
+            wire_sponge.setState(SpongeState.spin)
+        elif symbol == key.RIGHT:
+            wire_sponge.facing = Facing.right
+        elif symbol == key.LEFT:
+            wire_sponge.facing = Facing.left
 
     def on_key_release(self, symbol, modifiers):
         pass

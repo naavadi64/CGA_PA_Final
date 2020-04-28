@@ -136,9 +136,7 @@ class SpongeState(Enum):
     throwHrzBegin = 200
     throwHrz = 201
     throwHrzEnd = 202
-    spinBegin = 100
-    spin = 101
-    spinEnd = 102
+    spin = 100
 
 
 class Facing(Enum):
@@ -359,12 +357,12 @@ class MortalObject:
 
 
 class WireSponge(MortalObject):
-    def __init__(self, position=Vector(843, 0), facing=Facing.left):
+    def __init__(self, position=Vector(843, 0)):
         super().__init__(position)
         self.spin_counter = 0
         self.position = Vector(843, 0)
         self.curState = SpongeState.idle
-        self.facing = facing
+        self.facing = Facing.left
 
     def update(self):
         # disini buat sesuai FSM karakter si sponge nya
@@ -374,7 +372,7 @@ class WireSponge(MortalObject):
         if self.curState == SpongeState.idle:
             pass
 
-        #intro
+        # intro
         elif self.curState == SpongeState.introChainFall:
             self.velocity.y = 15
             frame = self.sprites[self.spritesId].frames[self.frameId]
@@ -400,20 +398,22 @@ class WireSponge(MortalObject):
                 self.setState(SpongeState.idle)
 
         # State by input control
+
+        # Leap
         elif self.curState == SpongeState.leapBegin:
             if self.curTimeFrame == 0 and self.frameId == 0:
-                self.velocity.y = -10
-                if self.facing.left:
-                    self.velocity.x = -10
+                self.velocity.y = -20
+                if self.facing == Facing.left:
+                    self.velocity.x = -5
                 else:
-                    self.velocity.x = 10
+                    self.velocity.x = 5
                 self.setState(SpongeState.leapUp)
         elif self.curState == SpongeState.leapUp:
-            self.velocity.y += 1
+            self.velocity.y += 2
             if self.velocity.y >= 1:
                 self.setState(SpongeState.leapDown)
         elif self.curState == SpongeState.leapDown:
-            self.velocity.y += 1
+            self.velocity.y += 2
             frame = self.sprites[self.spritesId].frames[self.frameId]
             if self.position.y + frame.yBottom - frame.anchor.y >= 482:  # Touch platform
                 self.position.y = 482 - frame.yBottom + frame.anchor.y
@@ -424,6 +424,14 @@ class WireSponge(MortalObject):
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.idle)
                 self.on_ground = True
+
+        # Spin
+        elif self.curState == SpongeState.spin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.spin_counter += 1
+            if self.spin_counter == 5:
+                self.spin_counter = 0
+                self.setState(SpongeState.idle)
 
 
 class ChainSponge(MortalObject):
