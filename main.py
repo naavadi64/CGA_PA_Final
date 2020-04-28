@@ -2,7 +2,7 @@ import imgui
 import imgui.core
 from copy import copy
 from imgui.integrations.pyglet import PygletRenderer
-from pyglet.window import  key, mouse
+from pyglet.window import key, mouse
 from GameObject import *
 
 bg = ImageObject("resource/spongy_wired.jpg")
@@ -162,6 +162,9 @@ class Controls:  # --UI and Controls--
         self.showPlayerControls = False  #
 
         self.showDummyControls = False  #
+        self.actStand = True
+        self.actMove = False
+        self.actAttack = False
 
         self.showTestWindow = False  #
         self.test_checkbox = False
@@ -175,10 +178,69 @@ class Controls:  # --UI and Controls--
         # --Imgui Windows--
         # --Note: Variables are defined in __init__ under Imgui Window Variables
         if self.showPlayerControls:
-            pass
+            imgui.begin("Player Controls")
+
+            imgui.begin_child("movement", 320, 120, border=True)
+            imgui.text("Movement")
+            if imgui.button("Turn to Opposite", 300, 20):
+                pass
+            if imgui.button("Face Left", 140, 20):
+                wire_sponge.facing = Facing.left
+            imgui.same_line(spacing=20)
+            if imgui.button("Face Right", 140, 20):
+                wire_sponge.facing = Facing.right
+            if imgui.button("Walk", 300, 20):
+                pass
+            if imgui.button("Walk Left", 140, 20):
+                pass
+            imgui.same_line(spacing=20)
+            if imgui.button("Walk Right", 140, 20):
+                pass
+            if imgui.button("Jump", 300, 20):
+                if wire_sponge.on_ground:
+                    wire_sponge.setState(SpongeState.leapBegin)
+                    wire_sponge.on_ground = False
+            imgui.new_line()
+            imgui.end_child()
+
+            imgui.begin_child("skills", 320, 80, border=True)
+            imgui.text("Attacks and Skills")
+            if imgui.button("Attack", 300, 20):
+                pass
+            if imgui.button("Chain Spin", 300, 20):
+                if wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
+                    wire_sponge.setState(SpongeState.spin)
+            if imgui.button("Thunder Dance", 300, 20):
+                pass
+            imgui.new_line()
+            imgui.end_child()
+
+            imgui.end()
 
         if self.showDummyControls:
-            pass
+            imgui.begin("Dummy Controls")
+
+            imgui.begin_child("spawn", 320, 80, border=True)
+            imgui.text("Spawn Controls")
+            if imgui.button("Respawn", 300, 20):
+                pass
+            if imgui.button("Spawn", 140, 20):
+                pass
+            imgui.same_line(spacing=20)
+            if imgui.button("Despawn", 140, 20):
+                pass
+            imgui.new_line()
+            imgui.end_child()
+
+            imgui.begin_child("behaviour", 320, 80, border=True)
+            imgui.text("Behaviour Controls")
+            changed, self.actStand = imgui.checkbox("Stand", self.actStand)
+            changed, self.actMove = imgui.checkbox("Move", self.actMove)
+            changed, self.actAttack = imgui.checkbox("Attack", self.actAttack)
+            imgui.new_line()
+            imgui.end_child()
+
+            imgui.end()
 
         if self.showTestWindow:
             imgui.begin("Test Window")
@@ -195,7 +257,7 @@ class Controls:  # --UI and Controls--
             if imgui.begin_menu("Application", True):
 
                 selected_test, clicked_test = imgui.menu_item(
-                    "Test Window", "", self.showTestWindow, True
+                    "Test Window", "", False, True
                 )
                 if clicked_test:
                     if not self.showTestWindow:
@@ -210,7 +272,7 @@ class Controls:  # --UI and Controls--
                     "Quit", "", False, True
                 )
                 if clicked_quit:
-                    exit(1)
+                    exit(0)
                 if selected_quit:
                     pass
 
@@ -249,6 +311,25 @@ class Controls:  # --UI and Controls--
 
                 imgui.end_menu()
 
+            if imgui.begin_menu("Help", True):
+                selected_controls, clicked_controls = imgui.menu_item(
+                    "Keyboard Controls", "", False, True
+                )
+                if clicked_controls:
+                    pass
+                if selected_controls:
+                    pass
+
+                selected_about, clicked_about = imgui.menu_item(
+                    "About", "", False, True
+                )
+                if clicked_about:
+                    pass
+                if selected_about:
+                    pass
+
+                imgui.end_menu()
+
         imgui.end_main_menu_bar()
         imgui.end_frame()
         # --UI ends here--
@@ -260,7 +341,7 @@ class Application(pyglet.window.Window):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
         pyglet.clock.schedule_interval(self.update, 1/30)
-        self.control_ui = Controls(self)  # UI class call, check Controls section
+        self.control_ui = Controls(self)  # UI class call, check Controls class
 
     def on_draw(self):
         pass
@@ -281,38 +362,32 @@ class Application(pyglet.window.Window):
     Z:                  Attack with chain (Left/Right)
     X:                  Spin Chain
     C:                  Thunder Dance
-    Arrow key up + Z    Attack with chain (Up)
+    Arrow key up + Z:   Attack with chain (Up)
     '''
     def on_key_press(self, symbol, modifiers):
         if symbol == key.LEFT:
-            pass
-
-        if symbol == key.RIGHT:
-            pass
-
-        if symbol == key.UP:
-            pass
-
-        if symbol == key.DOWN:
-            pass
-
-        if symbol == key.SPACE and wire_sponge.on_ground:
-            wire_sponge.setState(SpongeState.leapBegin)
-            wire_sponge.on_ground = False
-        elif symbol == key.X and wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
-            wire_sponge.setState(SpongeState.spin)
-        elif symbol == key.RIGHT:
-            wire_sponge.facing = Facing.right
-        elif symbol == key.LEFT:
             wire_sponge.facing = Facing.left
 
-        if symbol == key.Z:
+        elif symbol == key.RIGHT:
+            wire_sponge.facing = Facing.right
+
+        elif symbol == key.UP:
             pass
 
-        if symbol == key.X:
+        elif symbol == key.DOWN:
             pass
 
-        if symbol == key.C:
+        elif symbol == key.SPACE and wire_sponge.on_ground:
+            wire_sponge.setState(SpongeState.leapBegin)
+            wire_sponge.on_ground = False
+
+        elif symbol == key.Z:
+            pass
+
+        elif symbol == key.X and wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
+            wire_sponge.setState(SpongeState.spin)
+
+        elif symbol == key.C:
             pass
 
     def on_key_release(self, symbol, modifiers):  # pass if not needed
