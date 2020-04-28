@@ -154,15 +154,34 @@ class Controls:  # --UI and Controls--
         imgui.create_context()
         self.renderer = PygletRenderer(window)
         self.impl = PygletRenderer(window)
-        imgui.new_frame()
+        imgui.new_frame()  # Required since on call, imgui needs to render once
         imgui.end_frame()
+
+        # --Imgui Window Variables--
+        self.showPlayerControls = False
+        self.showDummyControls = False
+        self.showTestWindow = False
 
     def render_ui(self):
         imgui.render()
         self.impl.render(imgui.get_draw_data())
+        imgui.new_frame()
+
+        # --Imgui Windows--
+        def player_controls():
+            if self.showPlayerControls:
+                pass
+
+        def dummy_controls():
+            if self.showDummyControls:
+                pass
+
+        def test_window():
+            if self.showTestWindow:
+                pass
+
 
         # --This is where the fun begins--
-        imgui.new_frame()
         if imgui.begin_main_menu_bar():
 
             if imgui.begin_menu("Application", True):
@@ -176,10 +195,45 @@ class Controls:  # --UI and Controls--
 
                 imgui.end_menu()
 
+            if imgui.begin_menu("Animate", True):
+                selected_reset, clicked_reset = imgui.menu_item(
+                    "Reset All", "", False, True
+                )
+                if clicked_reset:
+                    pass
+                if selected_reset:
+                    pass
+
+                selected_player, clicked_player = imgui.menu_item(
+                    "Player", "", False, True
+                )
+                if clicked_player:
+                    if not self.showPlayerControls:
+                        self.showPlayerControls = True
+                    else:
+                        self.showPlayerControls = False
+                if selected_player:
+                    pass
+
+                selected_dummy, clicked_dummy = imgui.menu_item(
+                    "Dummy", "", False, True
+                )
+                if clicked_dummy:
+                    if not self.showDummyControls:
+                        self.showDummyControls = True
+                    else:
+                        self.showDummyControls = False
+                if selected_dummy:
+                    pass
+
+                imgui.end_menu()
+
         imgui.end_main_menu_bar()
         imgui.end_frame()
+        # --UI ends here--
 
 
+# --Main Application--
 class Application(pyglet.window.Window):
     def __init__(self):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
@@ -197,7 +251,31 @@ class Application(pyglet.window.Window):
         display_img()
         self.control_ui.render_ui()
 
+    '''
+    Controls:
+    Arrow key left:     Turn/Move Left
+    Arrow key right:    Turn/Move Right
+    Arrow key up:       Look up (Contextual) 
+    Arrow key down:     Look down (Contextual) 
+    Space:              Jump/Leap
+    Z:                  Attack with chain (Left/Right)
+    X:                  Spin Chain
+    C:                  Thunder Dance
+    Arrow key up + Z    Attack with chain (Up)
+    '''
     def on_key_press(self, symbol, modifiers):
+        if symbol == key.LEFT:
+            pass
+
+        if symbol == key.RIGHT:
+            pass
+
+        if symbol == key.UP:
+            pass
+
+        if symbol == key.DOWN:
+            pass
+
         if symbol == key.SPACE and wire_sponge.on_ground:
             wire_sponge.setState(SpongeState.leapBegin)
             wire_sponge.on_ground = False
@@ -208,8 +286,39 @@ class Application(pyglet.window.Window):
         elif symbol == key.LEFT:
             wire_sponge.facing = Facing.left
 
-    def on_key_release(self, symbol, modifiers):
-        pass
+        if symbol == key.Z:
+            pass
+
+        if symbol == key.X:
+            pass
+
+        if symbol == key.C:
+            pass
+
+    def on_key_release(self, symbol, modifiers):  # pass if not needed
+        if symbol == key.LEFT:
+            pass
+
+        if symbol == key.RIGHT:
+            pass
+
+        if symbol == key.UP:
+            pass
+
+        if symbol == key.DOWN:
+            pass
+
+        if symbol == key.SPACE and wire_sponge.on_ground:
+            pass
+
+        if symbol == key.Z:
+            pass
+
+        if symbol == key.X:
+            pass
+
+        if symbol == key.C:
+            pass
 
 
 app = Application()
