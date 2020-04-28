@@ -164,7 +164,7 @@ class ImageObject:
             self.pitch = -self.width * len('RGB')  # Number of bytes per row
             self.data = bytearray(img.get_data(fmt='RGB', pitch=self.pitch))  # Pixels bytearray data
         except FileNotFoundError:
-            print("File not succesfully loaded")
+            print("File not successfully loaded, check ../Resource/")
             exit()
 
     def get_bytes(self):
