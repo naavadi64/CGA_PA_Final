@@ -149,10 +149,9 @@ def display_img():
     img_display.blit(0,0)
 
 
-class Controls:  # --UI and Controls--
+class Interface:  # --UI and Controls--
     def __init__(self, window):
         imgui.create_context()
-        self.renderer = PygletRenderer(window)
         self.impl = PygletRenderer(window)
         imgui.new_frame()  # Required since on call, imgui needs to render once
         imgui.end_frame()
@@ -166,11 +165,15 @@ class Controls:  # --UI and Controls--
         self.actMove = False
         self.actAttack = False
 
+        self.showControlHelp = False  #
+
+        self.showAbout = False  #
+
         self.showTestWindow = False  #
         self.test_checkbox = False
         self.test_input_int = 0
 
-    def render_ui(self):
+    def render(self):
         imgui.render()
         self.impl.render(imgui.get_draw_data())
         imgui.new_frame()
@@ -183,13 +186,16 @@ class Controls:  # --UI and Controls--
             imgui.begin_child("movement", 320, 120, border=True)
             imgui.text("Movement")
             if imgui.button("Turn to Opposite", 300, 20):
-                pass
+                if wire_sponge.facing == Facing.left:
+                    wire_sponge.facing == Facing.right
+                else:
+                    wire_sponge.facing = Facing.left
             if imgui.button("Face Left", 140, 20):
                 wire_sponge.facing = Facing.left
             imgui.same_line(spacing=20)
             if imgui.button("Face Right", 140, 20):
                 wire_sponge.facing = Facing.right
-            if imgui.button("Walk", 300, 20):
+            if imgui.button("Walk (Toggle)", 300, 20):
                 pass
             if imgui.button("Walk Left", 140, 20):
                 pass
@@ -240,6 +246,15 @@ class Controls:  # --UI and Controls--
             imgui.new_line()
             imgui.end_child()
 
+            imgui.end()
+
+        if self.showControlHelp:
+            imgui.begin("Control Help")
+            imgui.text("Arrow Keys: Move")
+            imgui.text("Space:      Jump")
+            imgui.text("Z:          Attack")
+            imgui.text("X:          Spin Chain")
+            imgui.text("C:          Thunder Dance")
             imgui.end()
 
         if self.showTestWindow:
@@ -316,7 +331,10 @@ class Controls:  # --UI and Controls--
                     "Keyboard Controls", "", False, True
                 )
                 if clicked_controls:
-                    pass
+                    if self.showControlHelp:
+                        self.showControlHelp = False
+                    else:
+                        self.showControlHelp = True
                 if selected_controls:
                     pass
 
@@ -324,7 +342,10 @@ class Controls:  # --UI and Controls--
                     "About", "", False, True
                 )
                 if clicked_about:
-                    pass
+                    if self.showAbout:
+                        self.showAbout = False
+                    else:
+                        self.showAbout = True
                 if selected_about:
                     pass
 
@@ -341,7 +362,7 @@ class Application(pyglet.window.Window):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
         pyglet.clock.schedule_interval(self.update, 1/30)
-        self.control_ui = Controls(self)  # UI class call, check Controls class
+        self.interface = Interface(self)  # UI class call, check Controls class
 
     def on_draw(self):
         pass
@@ -350,7 +371,7 @@ class Application(pyglet.window.Window):
         self.clear()
         wire_sponge.update()
         display_img()
-        self.control_ui.render_ui()
+        self.interface.render()
 
     '''
     Controls:
