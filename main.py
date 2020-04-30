@@ -5,9 +5,11 @@ from imgui.integrations.pyglet import PygletRenderer
 from pyglet.window import key, mouse
 from GameObject import *
 
-bg = ImageObject("resource/spongy_wired.jpg")
-sprsht = ImageObject("resource/spritesheet.png")
-sprmask = ImageObject("resource/spritesheet_mask.png")
+bg = ImageObject("resource/spongy_wired.bmp")
+sprsht = ImageObject("resource/spritesheet.bmp")
+sprmask = ImageObject("resource/spritesheet_mask.bmp")
+dummy_sprsht = ImageObject("resource/dummy_spritesheet.bmp")
+dummy_sprmask = ImageObject("resource/dummy_spritesheet_mask.bmp")
 wire_sponge = WireSponge(Vector(800, 480))
 img_draw = copy(bg)
 img_display = pyglet.image.ImageData(
@@ -20,6 +22,7 @@ img_display = pyglet.image.ImageData(
 
 
 def initialize_sprite():
+    # ----Wire Sponge----
     # Idle
     SpongeIdle = FrameCollection(SpongeState.idle)
     SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
@@ -73,6 +76,19 @@ def initialize_sprite():
     SpongeSpin.insert(Frame(365, 418, 23, 82, Vector(393, 55), 1))
     SpongeSpin.insert(Frame(551, 603, 21, 80, Vector(578, 53), 1))
 
+    # Chain Throw/Attack - States Unfinished
+    '''
+    SpongeChainHrzBegin = FrameCollection(SpongeState.throwHrzBegin)
+    SpongeChainHrz = FrameCollection(SpongeState.throwHrz)  # Left
+    SpongeChainHrzEnd = FrameCollection(SpongeState.throwHrzEnd)
+    SpongeChainVrtBegin = FrameCollection(SpongeState)
+    SpongeChainVrt = FrameCollection()
+    SpongeChainVrtEnd = FrameCollection()
+
+    SpongeChainHrz.insert(Frame(312, 673, 503, 518, Vector(), 1))
+    SpongeChainVrt.insert(Frame(987, 1000, 4, 554, Vector(), 1))
+    '''
+
     # Initializing the sprites
     wire_sponge.insert(SpongeIdle)
     wire_sponge.insert(SpongeIntroChainFall)
@@ -90,6 +106,26 @@ def initialize_sprite():
 
     wire_sponge.setState(SpongeState.introChainFall)
     wire_sponge.chain.setState(ChainState.fallIntro)
+
+    # ----Dummy---- Class and State Unfinished(?)
+    '''
+    # Idle
+    DummyIdle = FrameCollection(DummyState.idle)
+    DummyIdle.insert(Frame(208, 239, 14, 49, Vector(224, 32), 1))
+
+    # Intro/Spawn - States Undefined, frame timing Unfinished
+    DummySpawnLine = FrameCollection(DummyState.SpawnLine)
+    DummySpawnBlob = FrameCollection(DummyState.SpawnBlob)
+    DummySpawnTp = FrameCollection(DummyState.SpawnTp)
+
+    DummySpawnLine.insert(Frame(0, 9, 0, 49, Vector(4, 25), 1))
+    DummySpawnBlob.insert(Frame(12, 35, 19, 49, Vector(), 1))
+    DummySpawnTp.insert(Frame(38, 69, 6, 49, Vector(), 1))
+    DummySpawnTp.insert(Frame(72, 103, 9, 49, Vector(), 1))
+    DummySpawnTp.insert(Frame(140, 169, 14, 49, Vector(), 1))
+    DummySpawnTp.insert(Frame(174, 205, 16, 49, Vector(), 1))
+    DummySpawnTp.insert(Frame(208, 239, 14, 49, Vector(224, 32), 1))
+    '''
 
 
 def put_sprite(character):
@@ -191,7 +227,7 @@ class Interface:  # --UI and Controls--
         if self.showPlayerControls:
             imgui.begin("Player Controls")
 
-            imgui.begin_child("movement", 320, 120, border=True)
+            imgui.begin_child("movement", 320, 180, border=True)
             imgui.text("Movement")
             if imgui.button("Turn to Opposite", 300, 20):
                 if wire_sponge.facing == Facing.left:
@@ -217,7 +253,7 @@ class Interface:  # --UI and Controls--
             imgui.new_line()
             imgui.end_child()
 
-            imgui.begin_child("skills", 320, 80, border=True)
+            imgui.begin_child("skills", 320, 120, border=True)
             imgui.text("Attacks and Skills")
             if imgui.button("Attack", 300, 20):
                 pass
