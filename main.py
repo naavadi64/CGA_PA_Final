@@ -26,13 +26,17 @@ def initialize_sprite():
 
     # Intro
     SpongeIntroChainFall = FrameCollection(SpongeState.introChainFall)
+    ChainIntroFall = FrameCollection(ChainState.fallIntro)
+    ChainIntroRelease = FrameCollection(ChainState.releaseIntro)
     SpongeIntroChainWait = FrameCollection(SpongeState.introChainWait)
     SpongeIntroChainFallEnd = FrameCollection(SpongeState.introChainFallEnd)
     SpongeIntroSpin = FrameCollection(SpongeState.introSpin)
     SpongeIntroCharge = FrameCollection(SpongeState.introCharge)
 
-    SpongeIntroChainFall.insert(Frame(218, 268, 100, 169, Vector(250, 133), 1))
-    SpongeIntroChainWait.insert(Frame(4, 63, 23, 86, Vector(38, 57), 6))
+    SpongeIntroChainFall.insert(Frame(218, 268, 100, 169, Vector(250, 133), 1, fist_position=Vector(259, 103)))
+    ChainIntroFall.insert(Frame(986, 1002, 4, 22, Vector(994, 13), 1))
+    ChainIntroRelease.insert(Frame(986, 1002, 4, 556, Vector(994, 280), 1))
+    SpongeIntroChainWait.insert(Frame(4, 63, 23, 86, Vector(41, 57), 1, fist_position=Vector(48, 29)))
     SpongeIntroChainFallEnd.insert(Frame(82, 137, 26, 85, Vector(108, 58), 4))
     SpongeIntroSpin.insert(Frame(498, 549, 12, 80, Vector(524, 53), 1))
     SpongeIntroSpin.insert(Frame(221, 285, 19, 84, Vector(260, 57), 1))
@@ -72,6 +76,8 @@ def initialize_sprite():
     # Initializing the sprites
     wire_sponge.insert(SpongeIdle)
     wire_sponge.insert(SpongeIntroChainFall)
+    wire_sponge.chain.insert(ChainIntroFall)
+    wire_sponge.chain.insert(ChainIntroRelease)
     wire_sponge.insert(SpongeIntroChainWait)
     wire_sponge.insert(SpongeIntroChainFallEnd)
     wire_sponge.insert(SpongeIntroSpin)
@@ -83,10 +89,12 @@ def initialize_sprite():
     wire_sponge.insert(SpongeSpin)
 
     wire_sponge.setState(SpongeState.introChainFall)
+    wire_sponge.chain.setState(ChainState.fallIntro)
 
 
 def put_sprite(character):
-    img_draw.data = bytearray(bg.data)
+    if character.curState.value == -1:
+        return
     frame = character.sprites[character.spritesId].frames[character.frameId]
     sprite_width = frame.xRight - frame.xLeft
     sprite_height = frame.yBottom - frame.yTop
@@ -94,7 +102,6 @@ def put_sprite(character):
     if character.facing == Facing.left:
         spriteLeft = character.position.x - frame.anchor.x + frame.xLeft
         spriteTop = character.position.y - frame.anchor.y + frame.yTop
-
         for i in range(sprite_width):
             for j in range(sprite_height):
                 img_draw.set_pixel_bytearray(
@@ -117,7 +124,6 @@ def put_sprite(character):
     else:
         spriteLeft = character.position.x + frame.anchor.x - frame.xRight
         spriteTop = character.position.y - frame.anchor.y + frame.yTop
-
         for i in range(sprite_width):
             for j in range(sprite_height):
                 img_draw.set_pixel_bytearray(
@@ -140,6 +146,8 @@ def put_sprite(character):
 
 
 def display_img():
+    img_draw.data = bytearray(bg.data)
+    put_sprite(wire_sponge.chain)
     put_sprite(wire_sponge)
     img_display.set_data(
         'RGB',
@@ -194,6 +202,7 @@ class Application(pyglet.window.Window):
     def update(self, dt):
         self.clear()
         wire_sponge.update()
+        wire_sponge.chain.update()
         display_img()
         self.control_ui.render_ui()
 

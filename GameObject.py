@@ -6,6 +6,7 @@ class Color:
     """
     Class color. Perlu dijelasin? RGB.
     """
+
     def __init__(self, r, g, b):
         self.r = r
         self.g = g
@@ -16,6 +17,7 @@ class Vector:
     """
         Vector bisa dijadikan point ataupun velocity
     """
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -28,7 +30,7 @@ def ANDColor(color1, color2):
     :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
     :return: satu color yang udah di bitwise AND
     """
-    clr = Color(0,0,0)
+    clr = Color(0, 0, 0)
     clr.r = color1.r & color2.r
     clr.g = color1.g & color2.g
     clr.b = color1.b & color2.b
@@ -61,7 +63,7 @@ def ORColor(color1, color2):
     :param color2: color 2 yang ingin di bitwise sesuai class GameObject.Color
     :return: satu color yang udah di bitwise OR
     """
-    clr = Color(0,0,0)
+    clr = Color(0, 0, 0)
     clr.r = color1.r | color2.r
     clr.g = color1.g | color2.g
     clr.b = color1.b | color2.b
@@ -87,6 +89,16 @@ def ORwPixelByte(pxlb_1, pxlb_2):
     return pxlb
 
 
+class MortalState(Enum):
+    """
+    State untuk object mortal
+    """
+    idle = 0
+    hit = 2
+    destruct = 3
+    NaN = -1    # Means not to be drawn
+
+
 class DummyState(Enum):
     """
     State buat karakter biasa atau pun dummy
@@ -96,33 +108,28 @@ class DummyState(Enum):
     jumpBegin = 10
     jump = 11
     jumpEnd = 12
-
-
-class MortalState(Enum):
-    """
-    State untuk object mortal
-    """
-    idle = 0
-    hit = 2
-    destruct = 3
+    NaN = -1
 
 
 class ChainState(Enum):
     """
     State untuk chain Sponge
     """
+    idle = 0
     thrownH = 30
     thrownV = 40
     releaseH = 31
     releaseV = 41
     fallIntro = 999
     releaseIntro = 998
+    NaN = -1
 
 
 class SpongeState(Enum):
     """
     State khusus untuk Wire Sponge
     """
+    NaN = -1
     idle = 0
     introChainFall = 60
     introChainWait = 61
@@ -152,6 +159,7 @@ class ImageObject:
     Sebuah raw image yang dibuat untuk load background, spritesheet, dsb. Koordinat raw image dimulai dari TOP-LEFT yang
     berbeda dengan koordinat screen pyglet BOTTOM-LEFT. Don't get confused in practice.
     '''
+
     def __init__(self, path):
         '''
         Constructor untuk initialize raw image baru dengan path dan filename yang tersedia.
@@ -271,14 +279,15 @@ class ImageObject:
             y = self.height - 1
         idx = y * self.width + x
         idx *= 3
-        self.data[idx:idx+3] = pixel_byte
+        self.data[idx:idx + 3] = pixel_byte
 
 
 class Frame:
     '''
     Frame bertindak seperti grid yang memotong dan memisahkan pada bagian image untuk sprite yang akan di apply.
     '''
-    def __init__(self, xLeft, xRight, yTop, yBottom, anchor: Vector, time_framing):
+
+    def __init__(self, xLeft, xRight, yTop, yBottom, anchor: Vector, time_framing, fist_position=None):
         '''
 
         :param xLeft:
@@ -295,12 +304,14 @@ class Frame:
         self.anchor = anchor
         self.id = None
         self.time_framing = time_framing
+        self.fist = fist_position
 
 
 class FrameCollection:
     '''
     Bertindak sebagai penampung Frames. Dipakai sebagai set frame karena akan dianimasikan sesuai state karakternya
     '''
+
     def __init__(self, state):
         '''
         Buat set of frames bare, atau bisa dibilang sprites.
@@ -321,14 +332,14 @@ class FrameCollection:
 
 
 class MortalObject:
-    def __init__(self, position):
+    def __init__(self, position: Vector):
         self.position = position
-        self.velocity = Vector(0,0)
+        self.velocity = Vector(0, 0)
         self.curState = MortalState.idle
         self.frameId = 0
         self.on_ground = False
         self.curTimeFrame = 0
-        self.sprites = []       # Frame collection
+        self.sprites = []  # Frame collection
         self.spritesId = 0
         self.facing = Facing.left
         self.getIdSpr = {}
@@ -339,9 +350,11 @@ class MortalObject:
 
     def setState(self, state):
         self.curState = state
-        self.spritesId = self.getIdSpr[state]
         self.curTimeFrame = 0
         self.frameId = 0
+        if state.value == -1:
+            return
+        self.spritesId = self.getIdSpr[state]
 
     def nextFrame(self):
         self.curTimeFrame += 1
@@ -353,7 +366,7 @@ class MortalObject:
 
     def update(self):
         pass  # ini untuk destructible object biasa/dummy/whatever, disini buat skema nya sesuai
-                # finite machine (FSM) karakternya
+        # finite machine (FSM) karakternya
 
 
 class WireSponge(MortalObject):
@@ -363,6 +376,7 @@ class WireSponge(MortalObject):
         self.position = Vector(843, 0)
         self.curState = SpongeState.idle
         self.facing = Facing.left
+        self.chain = ChainSponge()
 
     def update(self):
         # disini buat sesuai FSM karakter si sponge nya
@@ -376,14 +390,33 @@ class WireSponge(MortalObject):
         elif self.curState == SpongeState.introChainFall:
             self.velocity.y = 15
             frame = self.sprites[self.spritesId].frames[self.frameId]
+            self.chain.fist_pos.x = self.position.x + frame.fist.x - frame.anchor.x
+            self.chain.fist_pos.y = self.position.y - frame.anchor.y + frame.fist.y
             if self.position.y + frame.yBottom - frame.anchor.y >= 482:  # Touch platform
                 self.setState(SpongeState.introChainWait)
+                self.chain.begin = True
+                self.chain.setState(ChainState.releaseIntro)
+
+                # adjusting chain
+                frame_chain = self.chain.sprites[self.chain.spritesId].frames[self.chain.frameId]
+                last_posY = self.chain.position.y + frame_chain.yBottom - frame_chain.anchor.y
+                while last_posY < self.chain.fist_pos.y:
+                    frame_chain.anchor.y += 10
+                    self.chain.position.y += 10
+                    frame_chain.yBottom += 20
+                    last_posY = self.chain.position.y + frame_chain.yBottom - frame_chain.anchor.y
+                diff = last_posY - self.chain.fist_pos.y
+                frame_chain.anchor.y -= diff // 2
+                self.chain.position.y -= diff // 2
+                frame_chain.yBottom -= diff
+
                 self.velocity.y = 0
                 self.position.y = 482 - frame.yBottom + frame.anchor.y
                 self.on_ground = True
         elif self.curState == SpongeState.introChainWait:
-            if self.curTimeFrame == 0 and self.frameId == 0: # NOT COMPLETED
+            if self.curTimeFrame == 0 and self.frameId == 0 and self.chain.curState == ChainState.idle:
                 self.setState(SpongeState.introChainFallEnd)
+                self.chain.setState(ChainState.NaN)
         elif self.curState == SpongeState.introChainFallEnd:
             if self.curTimeFrame == 0:
                 self.setState(SpongeState.introSpin)
@@ -410,7 +443,7 @@ class WireSponge(MortalObject):
                 self.setState(SpongeState.leapUp)
         elif self.curState == SpongeState.leapUp:
             self.velocity.y += 2
-            if self.velocity.y >= 1:
+            if self.velocity.y >= 6:
                 self.setState(SpongeState.leapDown)
         elif self.curState == SpongeState.leapDown:
             self.velocity.y += 2
@@ -435,6 +468,52 @@ class WireSponge(MortalObject):
 
 
 class ChainSponge(MortalObject):
-    def __init__(self, position):
+    def __init__(self, position=Vector(None, None)):
         super().__init__(position)
+        self.fist_pos = Vector(None, None)
+        self.begin = True
 
+    def update(self):
+        if self.curState == ChainState.fallIntro:
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            if self.begin:
+                self.position.x = self.fist_pos.x
+                self.position.y = frame.anchor.y - frame.yTop - 10
+                self.begin = False
+            last_posY = self.position.y + frame.yBottom - frame.anchor.y
+            while last_posY < self.fist_pos.y:
+                frame.anchor.y += 10
+                self.position.y += 10
+                frame.yBottom += 20
+                last_posY = self.position.y + frame.yBottom - frame.anchor.y
+            # adjusting
+            diff = last_posY - self.fist_pos.y
+            frame.anchor.y -= diff // 2
+            self.position.y -= diff // 2
+            frame.yBottom -= diff
+
+        elif self.curState == ChainState.releaseIntro:
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            first_posY = self.position.y - frame.anchor.y + frame.yTop
+            if first_posY >= self.fist_pos.y:
+                self.curState = ChainState.idle
+            frame.anchor.y -= 20
+            self.position.y += 20
+            frame.yBottom -= 40
+
+    def setState(self, state):
+        self.curState = state
+        self.curTimeFrame = 0
+        self.frameId = 0
+        if state.value == -1:
+            return
+        frame_prev = self.sprites[self.spritesId].frames[self.frameId]
+        self.spritesId = self.getIdSpr[state]
+        frame_cur = self.sprites[self.spritesId].frames[self.frameId]
+
+        # adjusting
+        frame_cur.yTop = frame_prev.yTop
+        frame_cur.yBottom = frame_prev.yBottom
+        frame_cur.xRight = frame_prev.xRight
+        frame_cur.xLeft = frame_prev.xLeft
+        frame_cur.anchor = Vector(frame_prev.anchor.x, frame_prev.anchor.y)
