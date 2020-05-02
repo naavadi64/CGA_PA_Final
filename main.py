@@ -1,5 +1,6 @@
 import imgui
 import imgui.core
+import math
 from copy import copy
 from imgui.integrations.pyglet import PygletRenderer
 from pyglet.window import key, mouse
@@ -22,6 +23,11 @@ img_display = pyglet.image.ImageData(
 
 
 def initialize_sprite():
+    def auto_anchor(left, right, top, bottom):  # calculates anchor as midpoints of x and y, rounded up
+        x = math.ceil(((right - left) / 2) + left)
+        y = math.ceil(((top - bottom) / 2) + top)
+        return x, y
+
     # ----Wire Sponge----
     # Idle
     SpongeIdle = FrameCollection(SpongeState.idle)
@@ -142,24 +148,33 @@ def initialize_sprite():
     wire_sponge.setState(SpongeState.introChainFall)
     wire_sponge.chain.setState(ChainState.fallIntro)
 
-    # ----Dummy---- Class and State Unfinished(?)
+    # ----Dummy---- Class, States, timing Unfinished(?)
     '''
     # Idle
     DummyIdle = FrameCollection(DummyState.idle)
     DummyIdle.insert(Frame(208, 239, 14, 49, Vector(224, 32), 1))
 
-    # Intro/Spawn - States Undefined, frame timing Unfinished
-    DummySpawnLine = FrameCollection(DummyState.SpawnLine)
-    DummySpawnBlob = FrameCollection(DummyState.SpawnBlob)
-    DummySpawnTp = FrameCollection(DummyState.SpawnTp)
+    # Intro/Spawn
+    DummySpawnLine = FrameCollection(DummyState.spawnLine)
+    DummySpawnBlob = FrameCollection(DummyState.spawnBlob)
+    DummySpawnTp = FrameCollection(DummyState.spawnTp)
 
-    DummySpawnLine.insert(Frame(0, 9, 0, 49, Vector(4, 25), 1))
-    DummySpawnBlob.insert(Frame(12, 35, 19, 49, Vector(), 1))
-    DummySpawnTp.insert(Frame(38, 69, 6, 49, Vector(), 1))
-    DummySpawnTp.insert(Frame(72, 103, 9, 49, Vector(), 1))
-    DummySpawnTp.insert(Frame(140, 169, 14, 49, Vector(), 1))
-    DummySpawnTp.insert(Frame(174, 205, 16, 49, Vector(), 1))
-    DummySpawnTp.insert(Frame(208, 239, 14, 49, Vector(224, 32), 1))
+    DummySpawnLine.insert(Frame(0, 9, 0, 50, Vector(4, 25), 1))
+    DummySpawnBlob.insert(Frame(12, 35, 19, 50, Vector(), 1))
+    DummySpawnTp.insert(Frame(38, 69, 6, 50, Vector(), 1))
+    DummySpawnTp.insert(Frame(72, 103, 9, 50, Vector(), 1))
+    DummySpawnTp.insert(Frame(140, 169, 14, 50, Vector(), 1))
+    DummySpawnTp.insert(Frame(174, 205, 16, 50, Vector(), 1))
+    DummySpawnTp.insert(Frame(208, 239, 14, 50, Vector(224, 32), 1))
+    
+    # Walk Cycle
+    DummyWalk = FrameCollection(DummyState.walk)
+
+    DummyWalk.insert(Frame(314, 345, 15, 50, Vector(auto_anchor(314, 345, 15, 50)), 1))
+    DummyWalk.insert(Frame(345, 366, 15, 50, Vector(auto_anchor(345, 366, 15, 50)), 1))
+    DummyWalk.insert(Frame(366, 390, 14, 50, Vector(auto_anchor(366, 390, 14, 50)), 1))
+    DummyWalk.insert(Frame(389, 422, 15, 40, Vector(auto_anchor(389, 422, 15, 40)), 1))
+    DummyWalk.insert(Frame(422, ))
     '''
 
 
@@ -246,7 +261,7 @@ class Interface:  # --UI and Controls--
 
         # --Imgui Window Variables--
         # --Format: Window Boolean followed by its variables, separate each window with one end line.
-        self.showPlayerControls = False  #
+        self.showPlayerControls = True  #
 
         self.showDummyControls = False  #
         self.actStand = True
@@ -270,6 +285,9 @@ class Interface:  # --UI and Controls--
         # --Note: Variables are defined in __init__ under Imgui Window Variables
         if self.showPlayerControls:
             imgui.begin("Player Controls")
+            imgui.text("Current State:")
+            imgui.text(wire_sponge.curState.name)
+            imgui.new_line()
 
             imgui.begin_child("movement", 320, 180, border=True)
             imgui.text("Movement")
@@ -300,7 +318,11 @@ class Interface:  # --UI and Controls--
             imgui.begin_child("skills", 320, 120, border=True)
             imgui.text("Attacks and Skills")
             if imgui.button("Attack", 300, 20):
-                pass
+                if wire_sponge.chain.curState == ChainState.NaN \
+                        and wire_sponge.curState != SpongeState.throwHrz \
+                        and wire_sponge.curState != SpongeState.throwHrzRelease \
+                        and wire_sponge.curState != SpongeState.throwHrzPullGo:
+                    wire_sponge.setState(SpongeState.throwHrzBegin)
             if imgui.button("Chain Spin", 300, 20):
                 if wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
                     wire_sponge.setState(SpongeState.spin)
@@ -340,9 +362,9 @@ class Interface:  # --UI and Controls--
             imgui.begin("Control Help")
             imgui.text("Arrow Keys: Move")
             imgui.text("Space:      Jump")
-            imgui.text("Z:          Attack")
+            imgui.text("Z:          Thunder Dance")
             imgui.text("X:          Spin Chain")
-            imgui.text("C:          Thunder Dance")
+            imgui.text("C:          Attack")
             imgui.end()
 
         if self.showTestWindow:
@@ -469,9 +491,9 @@ class Application(pyglet.window.Window):
     Arrow key up:       Look up (Contextual) 
     Arrow key down:     Look down (Contextual) 
     Space:              Jump/Leap
-    Z:                  Attack with chain (Left/Right)
+    Z:                  Thunder Dance
     X:                  Spin Chain
-    C:                  Thunder Dance
+    C:                  Attack with chain (Left/Right)
     Arrow key up + Z:   Attack with chain (Up)
     '''
     def on_key_press(self, symbol, modifiers):
