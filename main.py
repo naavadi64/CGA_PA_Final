@@ -84,7 +84,7 @@ def initialize_sprite():
     ChainHrzPullStay = FrameCollection(ChainState.pullStayH)
     ChainHrzPullGo = FrameCollection(ChainState.pullGoH)
     SpongeChainHrzPullGo = FrameCollection(SpongeState.throwHrzPullGo)
-    SpongeChainHrzEnd = FrameCollection(SpongeState.throwHrzEnd)
+    SpongeChainHrzRelease = FrameCollection(SpongeState.throwHrzRelease)
     #SpongeChainVrtBegin = FrameCollection(SpongeState)
     #SpongeChainVrt = FrameCollection()
     #SpongeChainVrtEnd = FrameCollection()
@@ -101,7 +101,13 @@ def initialize_sprite():
     SpongeChainHrz.insert(Frame(679, 724, 113, 167, Vector(699, 143), 2, fist_position=Vector(682, 137)))
     SpongeChainHrzPullStay.insert(Frame(679, 724, 113, 167, Vector(699, 143), 2, fist_position=Vector(682, 137)))
     ChainHrzPullStay.insert(Frame(312, 330, 504, 518, Vector(321, 511), 1))
+    SpongeChainHrzPullGo.insert(Frame(797, 841, 114, 169, Vector(819, 144), 1, fist_position=Vector(800, 136)))
     ChainHrzPullGo.insert(Frame(312, 330, 504, 518, Vector(321, 511), 1))
+    SpongeChainHrzRelease.insert(Frame(926, 960, 113, 168, Vector(948, 143), 2, fist_position=Vector(929, 135)))
+    SpongeChainHrzRelease.insert(Frame(850, 885, 116, 165, Vector(872, 146), 2, fist_position=Vector(853, 138)))
+    SpongeChainHrzRelease.insert(Frame(897, 922, 117, 167, Vector(910, 148), 4, fist_position=Vector(901, 140)))
+    SpongeChainHrzRelease.insert(Frame(850, 885, 116, 165, Vector(872, 146), 2, fist_position=Vector(853, 138)))
+    SpongeChainHrzRelease.insert(Frame(926, 960, 113, 168, Vector(948, 143), 2, fist_position=Vector(929, 135)))
     #SpongeChainVrt.insert(Frame(987, 1000, 4, 554, Vector(), 1))
 
     # Initializing the sprites
@@ -128,7 +134,9 @@ def initialize_sprite():
     wire_sponge.chain.insert(ChainThrowHrz)
     wire_sponge.insert(SpongeChainHrzPullStay)
     wire_sponge.chain.insert(ChainHrzPullStay)
+    wire_sponge.insert(SpongeChainHrzPullGo)
     wire_sponge.chain.insert(ChainHrzPullGo)
+    wire_sponge.insert(SpongeChainHrzRelease)
 
     # Setting initial state
     wire_sponge.setState(SpongeState.introChainFall)
@@ -491,7 +499,10 @@ class Application(pyglet.window.Window):
         elif symbol == key.X and wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
             wire_sponge.setState(SpongeState.spin)
 
-        elif symbol == key.C and wire_sponge.chain.curState == ChainState.NaN:
+        elif symbol == key.C and (wire_sponge.chain.curState == ChainState.NaN
+                                and wire_sponge.curState != SpongeState.throwHrz
+                                and wire_sponge.curState != SpongeState.throwHrzRelease
+                                and wire_sponge.curState != SpongeState.throwHrzPullGo):
             wire_sponge.setState(SpongeState.throwHrzBegin)
 
     def on_key_release(self, symbol, modifiers):  # pass if not needed
