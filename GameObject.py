@@ -563,7 +563,16 @@ class WireSponge(MortalObject):
         elif self.curState == SpongeState.throwHrzRelease:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.on_equilibrium = Vector(False, False)
-                self.setState(SpongeState.idle)
+                if not self.on_ground:
+                    if self.facing == Facing.left:
+                        self.velocity.x = 10
+                        self.position.x += self.velocity.x
+                    else:
+                        self.velocity.x = -10
+                        self.position.x += self.velocity.x
+                    self.setState(SpongeState.leapDown)
+                else:
+                    self.setState(SpongeState.leapEnd)
 
         # Calculate motion
         self.calculate_motion()
