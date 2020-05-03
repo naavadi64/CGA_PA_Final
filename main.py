@@ -491,7 +491,6 @@ class Application(pyglet.window.Window):
 
         elif symbol == key.SPACE and wire_sponge.on_ground and wire_sponge.curState == SpongeState.idle:
             wire_sponge.setState(SpongeState.leapBegin)
-            wire_sponge.on_ground = False
 
         elif symbol == key.Z:
             pass
