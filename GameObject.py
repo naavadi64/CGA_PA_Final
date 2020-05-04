@@ -120,8 +120,7 @@ class ChainState(Enum):
     thrownV = 40
     pullGoH = 31
     pullStayH = 32
-    pullGoV = 41
-    pullStayV = 42
+    pullV = 41
     fallIntro = 999
     releaseIntro = 998
     NaN = -1
@@ -151,6 +150,8 @@ class SpongeState(Enum):
     throwVrt = 301
     throwVrtPull = 302
     throwVrtEnd = 303
+    seedBegin = 400
+    seedEnd = 401
     spin = 100
 
 
@@ -343,6 +344,7 @@ class MortalObject:
     def __init__(self, position: Vector):
         self.position = position
         self.velocity = Vector(0, 0)
+        self.acc = Vector(1, 1)
         self.curState = MortalState.idle
         self.frameId = 0
         self.on_ground = False
@@ -373,32 +375,53 @@ class MortalObject:
                 self.frameId = 0
             self.curTimeFrame = 0
 
-    def calculate_motion(self, gravity=1):  # gravity in pixel
+    def check_collision_horizontal(self):
         frame = self.sprites[self.spritesId].frames[self.frameId]
-        if self.on_equilibrium.x:
+        if self.position.x - frame.anchor.x + frame.xLeft < 0:  # Touch platform left
+            self.position.x = frame.anchor.x - frame.xLeft
+            self.on_equilibrium = Vector(True, False)
             self.velocity.x = 0
-        else:
-            if self.position.x - frame.anchor.x + frame.xLeft < 0:  # Touch platform left
-                self.position.x = frame.anchor.x - frame.xLeft
-                self.on_equilibrium = Vector(True, False)
-                self.velocity.x = 0
-                return
-            if self.position.x - frame.anchor.x + frame.xRight > 989:  # Right
-                self.position.x = 989 - frame.xRight + frame.anchor.x
-                self.on_equilibrium = Vector(True, False)
-                self.velocity.x = 0
-                return
-        if self.on_equilibrium.y:
+            return True
+        if self.position.x - frame.anchor.x + frame.xRight > 989:  # Right
+            self.position.x = 989 - frame.xRight + frame.anchor.x
+            self.on_equilibrium = Vector(True, False)
+            self.velocity.x = 0
+            return True
+        return False
+
+    def check_collision_vertical(self):
+        frame = self.sprites[self.spritesId].frames[self.frameId]
+        if self.position.y + frame.yBottom - frame.anchor.y >= 482 and self.velocity.y > 0:  # Touch platform, or change the code to any
+            self.position.y = 482 - frame.yBottom + frame.anchor.y
+            self.on_equilibrium = Vector(True, True)
+            self.velocity.x = 0
             self.velocity.y = 0
-        else:
-            if self.position.y + frame.yBottom - frame.anchor.y >= 482 and self.velocity.y > 0:  # Touch platform, or change the code to any
-                self.position.y = 482 - frame.yBottom + frame.anchor.y
-                self.on_equilibrium = Vector(True, True)
+            self.on_ground = True
+            return True
+        if self.position.y + frame.yTop - frame.anchor.y <= 0:  # Touch celing
+            self.position.y = frame.anchor.y - frame.yTop
+            self.on_equilibrium = Vector(False, False)
+            self.velocity.y = -self.velocity.y
+            return True
+        return False
+
+    def calculate_motion(self):
+        # X axis
+        if self.on_equilibrium.x:
+            if self.on_ground:
                 self.velocity.x = 0
+            else:
+                self.check_collision_horizontal()
+        else:
+            self.velocity.x += self.acc.x
+            self.check_collision_horizontal()
+        # Y axis
+        if self.on_equilibrium.y:
+            if self.on_ground:
                 self.velocity.y = 0
-                self.on_ground = True
-                return
-            self.velocity.y += gravity
+        else:
+            self.velocity.y += self.acc.y
+            self.check_collision_vertical()
 
     def update(self):
         self.nextFrame()
@@ -414,8 +437,10 @@ class WireSponge(MortalObject):
         self.facing = Facing.left
         self.chain = ChainSponge()
 
-    def calculate_motion(self, gravity=1):
-        super().calculate_motion(gravity)
+    def calculate_motion(self):
+        if not self.on_ground:
+            self.acc.y = 1
+        super().calculate_motion()
         self.chain.on_equilibrium.x = self.on_equilibrium.x
         self.chain.on_equilibrium.y = self.on_equilibrium.y
 
@@ -443,10 +468,8 @@ class WireSponge(MortalObject):
 
         # intro
         elif self.curState == SpongeState.introChainFall:
+            self.on_equilibrium = Vector(True, True)
             self.velocity.y = 15
-            frame = self.sprites[self.spritesId].frames[self.frameId]
-            self.chain.fist_pos.x = self.position.x + frame.fist.x - frame.anchor.x  # Need to checked further, facing
-            self.chain.fist_pos.y = self.position.y + frame.fist.y - frame.anchor.y
             if self.position.y + frame.yBottom - frame.anchor.y >= 482:  # Touch platform
                 self.setState(SpongeState.introChainWait)
                 self.chain.begin = True
@@ -489,13 +512,14 @@ class WireSponge(MortalObject):
 
         # Leap
         elif self.curState == SpongeState.leapBegin:
-            self.on_equilibrium = Vector(False, False)
+            self.on_equilibrium = Vector(True, False)
             self.on_ground = False
             self.velocity.y = -20
             if self.facing == Facing.left:
                 self.velocity.x = -5
             else:
                 self.velocity.x = 5
+            self.acc.x = 0
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.leapUp)
         elif self.curState == SpongeState.leapUp:
@@ -526,22 +550,28 @@ class WireSponge(MortalObject):
             if self.chain.curState == ChainState.pullStayH:
                 self.setState(SpongeState.throwHrzPullStay)
             elif self.chain.curState == ChainState.pullGoH:
+                self.velocity.y = 0
                 self.setState(SpongeState.throwHrzPullGo)
                 self.on_equilibrium = Vector(False, True)
                 if self.facing == Facing.left:
                     self.velocity.x = -10
+                    self.acc.x = -2
                 else:
                     self.velocity.x = 10
+                    self.acc.x = 2
         elif self.curState == SpongeState.throwHrz:
             if self.chain.curState == ChainState.pullStayH:
                 self.setState(SpongeState.throwHrzPullStay)
             elif self.chain.curState == ChainState.pullGoH:
+                self.velocity.y = 0
                 self.setState(SpongeState.throwHrzPullGo)
                 self.on_equilibrium = Vector(False, True)
                 if self.facing == Facing.left:
                     self.velocity.x = -10
+                    self.acc.x = -2
                 else:
                     self.velocity.x = 10
+                    self.acc.x = 2
         elif self.curState == SpongeState.throwHrzPullStay:
             if self.chain.curState == ChainState.NaN:
                 if not self.on_ground:
@@ -552,17 +582,14 @@ class WireSponge(MortalObject):
                 else:
                     self.setState(SpongeState.idle)
         elif self.curState == SpongeState.throwHrzPullGo:
-            frame = self.sprites[self.spritesId].frames[self.frameId]
-            if self.facing == Facing.left:
-                self.chain.fist_pos.x = self.position.x + frame.fist.x - frame.anchor.x
-            else:
-                self.chain.fist_pos.x = self.position.x - frame.fist.x + frame.anchor.x
             if self.chain.curState == ChainState.NaN:
+                self.velocity.y = 0
                 self.on_equilibrium = Vector(True, True)
+                self.velocity.x = 0
                 self.setState(SpongeState.throwHrzRelease)
         elif self.curState == SpongeState.throwHrzRelease:
             if self.curTimeFrame == 0 and self.frameId == 0:
-                self.on_equilibrium = Vector(False, False)
+                self.on_equilibrium = Vector(True, False)
                 if not self.on_ground:
                     if self.facing == Facing.left:
                         self.velocity.x = 10
@@ -573,6 +600,35 @@ class WireSponge(MortalObject):
                     self.setState(SpongeState.leapDown)
                 else:
                     self.setState(SpongeState.leapEnd)
+
+        # Throw Chain Vertically
+        elif self.curState == SpongeState.throwVrtBegin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.throwVrt)
+            if self.frameId == 5:
+                self.chain.setState(ChainState.thrownV)
+        elif self.curState == SpongeState.throwVrt:
+            if self.chain.curState == ChainState.pullV:
+                self.setState(SpongeState.throwVrtPull)
+                self.on_equilibrium = Vector(True, True)
+                self.velocity.y = -20
+        elif self.curState == SpongeState.throwVrtPull:
+            if self.chain.curState == ChainState.idle:
+                self.setState(SpongeState.seedBegin)
+            elif self.chain.curState == ChainState.NaN:
+                self.velocity.y = 0
+                # later check whether position.y should be adjusted ...
+                self.on_equilibrium = Vector(True, False)
+                self.setState(SpongeState.leapDown)  # Later check whether there's animation for releasing chain ...
+        elif self.curState == SpongeState.seedBegin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                # <--- here put code to throw seed
+                self.setState(SpongeState.seedEnd)
+        elif self.curState == SpongeState.seedEnd:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.throwVrtPull)
+        elif self.curState == SpongeState.throwVrtEnd:
+            pass  # Later check whether there's animation for releasing chain ...
 
         # Calculate motion
         self.calculate_motion()
@@ -586,11 +642,13 @@ class ChainSponge(MortalObject):
         self.frame_buffer = Frame(None, None, None, None, Vector(None, None), None)
 
     def update(self):
-
         self.nextFrame()
-        # Intro Chain
+
         if self.curState == ChainState.NaN:
             return
+        elif self.curState == ChainState.idle:
+            pass
+        # Intro Chain
         elif self.curState == ChainState.fallIntro:
             frame = self.sprites[self.spritesId].frames[self.frameId]
             if self.begin:
@@ -617,8 +675,7 @@ class ChainSponge(MortalObject):
             self.position.y += 20
             frame.yBottom -= 40
 
-        # Chain Thrown
-
+        # Chain thrown horizontally
         elif self.curState == ChainState.thrownH:
             sprId = self.spritesId
             frmId = self.frameId
@@ -692,6 +749,36 @@ class ChainSponge(MortalObject):
                     self.position.x += diff // 2
                 else:
                     self.setState(ChainState.NaN)
+
+        # Chain thrown vertically
+        elif self.curState == ChainState.thrownV:
+            sprId = self.spritesId
+            frmId = self.frameId
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            if self.begin:
+                self.position.x = self.fist_pos.x
+                self.position.y = self.fist_pos.y + frame.anchor.y - frame.yBottom
+                self.begin = False
+                return
+            # Check whether spike pinned
+            spike_posY = self.position.y - frame.anchor.y - frame.yTop
+            if spike_posY > 0:
+                frame.anchor.y += 23
+                self.position.y += 23
+                frame.yBottom += 46
+            else:
+                self.setState(ChainState.pullV)
+                self.revert_frame(sprId, frmId)
+        elif self.curState == ChainState.pullV:
+            frame = self.sprites[self.spritesId].frames[self.frameId]
+            tail_posY = self.position.y - frame.anchor.y + frame.yBottom
+            diff = tail_posY - self.fist_pos.y
+            if self.on_equilibrium.x and not self.on_equilibrium.y:
+                frame.yBottom -= diff
+                frame.anchor.y -= diff // 2
+                self.position.y -= diff // 2
+            else:
+                self.setState(ChainState.NaN)
 
         if self.velocity.x != 0 and self.velocity.y != 0:
             self.position.x += self.velocity.x
