@@ -9,8 +9,8 @@ from GameObject import *
 bg = ImageObject("resource/spongy_wired.jpg")
 sprsht = ImageObject("resource/spritesheet.png")
 sprmask = ImageObject("resource/spritesheet_mask.png")
-#dummy_sprsht = ImageObject("resource/dummy_spritesheet.bmp")
-#dummy_sprmask = ImageObject("resource/dummy_spritesheet_mask.bmp")
+dummy_sprsht = ImageObject("resource/dummy_spritesheet.bmp")
+dummy_sprmask = ImageObject("resource/dummy_spritesheet_mask.bmp")
 wire_sponge = WireSponge(Vector(800, 480))
 img_draw = copy(bg)
 img_display = pyglet.image.ImageData(
@@ -149,33 +149,76 @@ def initialize_sprite():
     wire_sponge.chain.setState(ChainState.fallIntro)
 
     # ----Dummy---- Class, States, timing Unfinished(?)
-    '''
+
     # Idle
     DummyIdle = FrameCollection(DummyState.idle)
-    DummyIdle.insert(Frame(208, 239, 14, 49, Vector(224, 32), 1))
+    DummyIdle.insert(Frame(208, 239, 15, 49, Vector(224, 32), 1))  # 8
 
     # Intro/Spawn
-    DummySpawnLine = FrameCollection(DummyState.spawnLine)
-    DummySpawnBlob = FrameCollection(DummyState.spawnBlob)
-    DummySpawnTp = FrameCollection(DummyState.spawnTp)
+    DummySpawn = FrameCollection(DummyState.spawn)
 
-    DummySpawnLine.insert(Frame(0, 9, 0, 50, Vector(4, 25), 1))
-    DummySpawnBlob.insert(Frame(12, 35, 19, 50, Vector(), 1))
-    DummySpawnTp.insert(Frame(38, 69, 6, 50, Vector(), 1))
-    DummySpawnTp.insert(Frame(72, 103, 9, 50, Vector(), 1))
-    DummySpawnTp.insert(Frame(140, 169, 14, 50, Vector(), 1))
-    DummySpawnTp.insert(Frame(174, 205, 16, 50, Vector(), 1))
-    DummySpawnTp.insert(Frame(208, 239, 14, 50, Vector(224, 32), 1))
+    DummySpawn.insert(Frame(0, 9, 0, 50, Vector(5, 32), 1))
+    DummySpawn.insert(Frame(12, 35, 19, 50, Vector(24, 32), 1))
+    DummySpawn.insert(Frame(38, 69, 7, 50, Vector(54, 32), 1))
+    DummySpawn.insert(Frame(72, 103, 10, 50, Vector(88, 32), 1))
+    DummySpawn.insert(Frame(106, 137, 13, 50, Vector(122, 32), 1))
+    DummySpawn.insert(Frame(140, 169, 15, 50, Vector(156, 32), 1))
+    DummySpawn.insert(Frame(174, 205, 17, 50, Vector(190, 32), 1))
+    DummySpawn.insert(Frame(208, 239, 15, 50, Vector(224, 32), 1))  # 8, End on idle
     
-    # Walk Cycle
+    # Walk Cycle - Note: retain y values from first frame for anchor to avoid vertical position weirdness
     DummyWalk = FrameCollection(DummyState.walk)
 
-    DummyWalk.insert(Frame(314, 345, 15, 50, Vector(auto_anchor(314, 345, 15, 50)), 1))
-    DummyWalk.insert(Frame(345, 366, 15, 50, Vector(auto_anchor(345, 366, 15, 50)), 1))
-    DummyWalk.insert(Frame(366, 390, 14, 50, Vector(auto_anchor(366, 390, 14, 50)), 1))
-    DummyWalk.insert(Frame(389, 422, 15, 40, Vector(auto_anchor(389, 422, 15, 40)), 1))
-    DummyWalk.insert(Frame(422, ))
-    '''
+    DummyWalk.insert(Frame(314, 345, 15, 50, Vector(330, 32), 1))  # 11
+    DummyWalk.insert(Frame(345, 366, 15, 50, Vector(361, 32), 1))  # 12
+    DummyWalk.insert(Frame(366, 390, 14, 50, Vector(382, 32), 1))  # 13
+    DummyWalk.insert(Frame(389, 422, 15, 50, Vector(405, 32), 1))  # 14
+    DummyWalk.insert(Frame(421, 456, 16, 50, Vector(437, 32), 1))  # 15
+    DummyWalk.insert(Frame(455, 482, 16, 50, Vector(471, 32), 1))  # 16
+    DummyWalk.insert(Frame(484, 507, 15, 50, Vector(500, 32), 1))  # 17
+    DummyWalk.insert(Frame(506, 532, 14, 50, Vector(522, 32), 1))  # 18
+    DummyWalk.insert(Frame(534, 565, 15, 50, Vector(550, 32), 1))  # 19
+    DummyWalk.insert(Frame(565, 600, 16, 50, Vector(581, 32), 1))  # 20
+    DummyWalk.insert(Frame(599, 628, 16, 50, Vector(615, 32), 1))  # 21, go back to 12
+    DummyWalk.insert(Frame(345, 366, 15, 50, Vector(361, 32), 1))  # 12
+    DummyWalk.insert(Frame(366, 390, 14, 50, Vector(382, 32), 1))  # 13
+    DummySpawn.insert(Frame(208, 239, 14, 50, Vector(224, 32), 1))  # 8, End on idle
+
+    # Attack (Standing) - Anchor based on idle sprite's dX (16), dY (18) from left, bottom
+    DummyAttack = FrameCollection(DummyState.attack)
+
+    DummyAttack.insert(Frame(0, 32, 163, 198, Vector(16, 181), 1))  # 1, Start
+    DummyAttack.insert(Frame(36, 66, 163, 198, Vector(52, 181), 1))  # 2, Recoil
+    DummyAttack.insert(Frame(0, 32, 163, 198, Vector(16, 18), 1))  # 1, Reset
+
+    # Stagger - Anchor based on idle sprite's dX (16), dY (18) from left, bottom
+    DummyStagger = FrameCollection(DummyState.stagger)
+
+    DummyStagger.insert(Frame(4, 32, 312, 349, Vector(20, 331), 1))  # 1, Start
+    DummyStagger.insert(Frame(34, 64, 314, 349, Vector(50, 331), 1))  # 2, Knockback
+    DummyStagger.insert(Frame(4, 32, 312, 349, Vector(20, 331), 1))  # 1, Recover & reset
+
+    # Electrocuted - Follow anchor of start sprite
+    DummyElec = FrameCollection(DummyState.electrocuted)
+
+    DummyElec.insert(Frame(4, 32, 312, 349, Vector(20, 331), 1))  # 1, Start
+    DummyElec.insert(Frame(34, 64, 314, 349, Vector(50, 331), 1))  # 2
+    DummyElec.insert(Frame(67, 97, 315, 349, Vector(91, 331), 1))  # 3
+    DummyElec.insert(Frame(100, 133, 304, 353, Vector(117, 331), 1))  # 4
+    DummyElec.insert(Frame(134, 164, 314, 349, Vector(150, 331), 1))  # 5
+    DummyElec.insert(Frame(167, 200, 304, 353, Vector(153, 331), 1))  # 6
+    DummyElec.insert(Frame(202, 232, 314, 349, Vector(218, 331), 1))  # 7
+    DummyElec.insert(Frame(235, 268, 304, 353, Vector(251, 331), 1))  # 8
+    DummyElec.insert(Frame(270, 302, 314, 331, Vector(286, 331), 1))  # 9
+    DummyElec.insert(Frame(34, 64, 314, 349, Vector(50, 331), 1))  # 2
+    DummyElec.insert(Frame(4, 32, 312, 349, Vector(20, 331), 1))  # 1
+    
+    # Explode
+    DummyExplode = FrameCollection(DummyState.explode)
+
+    DummyExplode.insert(Frame(204, 219, 437, 452, Vector(211, 434), 1))
+    DummyExplode.insert(Frame(199, 224, 405, 430, Vector(211, 412), 1))
+    DummyExplode.insert(Frame(204, 219, 437, 452, Vector(211, 434), 1))
 
 
 def put_sprite(character):
