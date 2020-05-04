@@ -104,10 +104,12 @@ class DummyState(Enum):
     State buat karakter biasa atau pun dummy
     """
     idle = 0
-    walk = 1
-    jumpBegin = 10
-    jump = 11
-    jumpEnd = 12
+    spawn = 1
+    walk = 4
+    attack = 7
+    stagger = 10
+    electrocuted = 11
+    explode = 12
     NaN = -1
 
 
