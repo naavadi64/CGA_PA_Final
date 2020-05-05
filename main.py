@@ -156,7 +156,32 @@ def initialize_sprite():
     WineVrtLeft.insert(Frame(883, 905, 355, 371, Vector(894, 363), 1))
     WineVrtRight.insert(Frame(859, 882, 355, 371, Vector(870, 363), 1))
 
-    # Thunder dance -> tolong
+    # Thunder Dance - 26, 25
+    SpongeDance = FrameCollection(SpongeState.dance)
+
+    SpongeDance.insert(30, 85, 217, 271, Vector(56, 246), 1)
+    SpongeDance.insert(93, 148, 220, 271, Vector(119, 246), 1)
+    SpongeDance.insert(154, 207, 217, 271, Vector(180, 246), 1)
+    SpongeDance.insert(220, 276, 222, 271, Vector(246, 246), 1)
+    SpongeDance.insert(286, 339, 213, 271, Vector(260, 246), 1)
+    SpongeDance.insert(350, 403, 203, 271, Vector(324, 246), 1)
+    SpongeDance.insert(408, 461, 201, 271, Vector(382, 246), 1)
+    SpongeDance.insert(473, 527, 191, 271, Vector(499, 246), 1)
+    SpongeDance.insert(543, 596, 188, 271, Vector(517, 246), 1)
+    SpongeDance.insert(604, 657, 187, 271, Vector(578, 246), 1)
+    SpongeDance.insert(669, 722, 187, 271, Vector(643, 246), 1)
+    SpongeDance.insert(734, 787, 202, 271, Vector(708, 246), 1)
+    SpongeDance.insert(853, 907, 200, 271, Vector(827, 246), 1)
+    SpongeDance.insert(18, 67, 288, 346, Vector(46, 321), 1)
+    SpongeDance.insert(72, 142, 286, 346, Vector(98, 321), 1)
+    SpongeDance.insert(147, 217, 300, 346, Vector(173, 321), 1)
+    SpongeDance.insert(224, 279, 297, 346, Vector(250, 321), 1)
+    SpongeDance.insert(285, 338, 293, 346, Vector(311, 321), 1)
+    SpongeDance.insert(342, 395, 286, 346, Vector(368, 321), 1)
+    SpongeDance.insert(405, 458, 288, 346, Vector(431, 321), 1)
+    SpongeDance.insert(460, 513, 287, 346, Vector(486, 321), 1)
+    SpongeDance.insert(520, 573, 287, 346, Vector(546, 321), 1)
+    SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
 
     # Initializing the sprites
     # Idle
