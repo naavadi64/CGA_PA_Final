@@ -1,4 +1,5 @@
 import pyglet
+import random
 from enum import Enum
 
 
@@ -111,6 +112,14 @@ class SeedWineState(Enum):
     vrtLeft = 52
     vrtRight = 53
 
+class ThunderState(Enum):
+    """
+    State untuk thunder
+    """
+    idle = 0
+    strikeBegin = 68
+    strikeEnd = 69
+
 
 class DummyState(Enum):
     """
@@ -168,7 +177,8 @@ class SpongeState(Enum):
     seedEnd = 401
     spin = 100
     thunderBegin = 70
-    thunderEnd = 71
+    thunderWait = 71
+    thunderEnd = 72
 
 
 class Facing(Enum):
@@ -455,11 +465,14 @@ class WireSponge(MortalObject):
     def __init__(self, position=Vector(843, 0)):
         super().__init__(position)
         self.spin_counter = 0
+        self.thunder_timing = 0
         self.position = Vector(843, 0)
         self.curState = SpongeState.idle
         self.facing = Facing.left
         self.using_chain = True
         self.chain = ChainSponge()
+        self.thunder_clone = None # Duh
+        self.thunders = []
         self.seed_wine_clone = SeedWine()
         self.seed_wines = []
 
@@ -480,10 +493,13 @@ class WireSponge(MortalObject):
 
         self.nextFrame()
 
-        # Check time life for seed and wines
+        # Check time life for seed/wines and thunders
         for seed in self.seed_wines:
             if seed.destruct:
                 self.seed_wines.remove(seed)
+        for thunder in self.thunders:
+            if thunder.destruct:
+                self.thunders.remove(thunder)
 
         # Set fist hand position
         frame = self.sprites[self.spritesId].frames[self.frameId]
@@ -663,9 +679,9 @@ class WireSponge(MortalObject):
         elif self.curState == SpongeState.seedBegin:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 if self.facing == Facing.left:
-                    vlc_seed = Vector(-10, -10)
+                    vlc_seed = Vector(-random.randint(5, 15), -random.randint(5, 15))
                 else:
-                    vlc_seed = Vector(10, -10)
+                    vlc_seed = Vector(random.randint(5, 15), -random.randint(5, 15))
                 frame = self.sprites[self.spritesId].frames[self.frameId]
                 head_pos = Vector(None, None)
                 head_pos.x = self.position.x + frame.head.x - frame.anchor.x
@@ -678,6 +694,20 @@ class WireSponge(MortalObject):
                 self.chain.setState(ChainState.pullV)
                 self.on_equilibrium = Vector(True, True)
                 self.velocity.y = -15
+
+        # Thunder dance
+        elif self.curState == SpongeState.thunderBegin:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.setState(SpongeState.thunderWait)
+
+        elif self.curState == SpongeState.thunderWait:
+            if self.thunder_timing >= 100:
+                if len(self.thunders) == 0:
+                    self.setState(SpongeState.thunderEnd)
+            else:
+                self.thunder_timing += 1
+                if self.thunder_timing % 10 == 0:
+                    self.add_thunder()
 
         # Calculate motion
         self.calculate_motion()
@@ -693,6 +723,11 @@ class WireSponge(MortalObject):
         new_seed.on_equilibrium = Vector(True, False)
         self.seed_wines.append(new_seed)
 
+    def add_thunder(self):
+        new_thunder = Thunder()
+        new_thunder.acc.y = 1
+        new_thunder.sprites = self.thunder_clone.sprites
+        new_thunder.getIdSpr = self.thunder_clone.getIdSpr
 
 class ChainSponge(MortalObject):
     def __init__(self, position=Vector(None, None)):
@@ -919,6 +954,32 @@ class SeedWine(MortalObject):
                 self.setState(SeedWineState.vrtLeft)
             else:
                 self.setState(SeedWineState.vrtRight)
+
+    def calculate_motion(self):
+        self.position.x += self.velocity.x
+        self.position.y += self.velocity.y
+        super().calculate_motion()
+
+
+class Thunder(MortalObject):
+    def __init__(self):
+        position = Vector(random.randint(100, 900), 0)
+        super().__init__(position=position)
+        self.setState(ThunderState.strikeBegin)
+        self.on_ground = False
+        self.on_equilibrium = Vector(True, False)
+        self.velocity.x = 0
+        self.velocity.y = 30
+        self.destruct = False
+
+    def update(self):
+        self.calculate_motion()
+        if self.curState == ThunderState.strikeBegin:
+            if self.on_ground:
+                self.setState(ThunderState.strikeEnd)
+        elif self.curState == ThunderState.strikeEnd:
+            if self.curTimeFrame == 0 and self.frameId == 0:
+                self.destruct = True
 
     def calculate_motion(self):
         self.position.x += self.velocity.x

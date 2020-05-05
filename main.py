@@ -157,6 +157,11 @@ def initialize_sprite():
     WineVrtRight.insert(Frame(859, 882, 355, 371, Vector(870, 363), 1))
 
     # Thunder dance -> tolong
+    ThunderBegin = FrameCollection(ThunderState.strikeBegin)
+    ThunderEnd = FrameCollection(ThunderState.strikeEnd)
+
+    ThunderBegin.insert(Frame(630, 648, 319, 441, Vector(639, 380), 1))
+    ThunderEnd.insert(Frame(662, 691, 320, 442, Vector(676, 381), 3))
 
     # Initializing the sprites
     # Idle
