@@ -12,6 +12,7 @@ sprmask = ImageObject("resource/spritesheet_mask.png")
 dummy_sprsht = ImageObject("resource/dummy_spritesheet.bmp")
 dummy_sprmask = ImageObject("resource/dummy_spritesheet_mask.bmp")
 wire_sponge = WireSponge(Vector(800, 480))
+
 img_draw = copy(bg)
 img_display = pyglet.image.ImageData(
     img_draw.width,
@@ -31,6 +32,8 @@ def initialize_sprite():
     # ----Wire Sponge----
     # Idle
     SpongeIdle = FrameCollection(SpongeState.idle)
+    ChainIdle = FrameCollection(ChainState.idle)
+    ChainIdle.insert(Frame(0, 0, 0, 0, Vector(0, 0), 1))
     SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
 
     # Intro
@@ -83,6 +86,7 @@ def initialize_sprite():
     SpongeSpin.insert(Frame(551, 603, 21, 80, Vector(578, 53), 1))
 
     # Chain Throw/Attack - States Unfinished
+    # Horizontal
     SpongeChainHrzBegin = FrameCollection(SpongeState.throwHrzBegin)
     ChainThrowHrz = FrameCollection(ChainState.thrownH)
     SpongeChainHrz = FrameCollection(SpongeState.throwHrz)
@@ -91,9 +95,6 @@ def initialize_sprite():
     ChainHrzPullGo = FrameCollection(ChainState.pullGoH)
     SpongeChainHrzPullGo = FrameCollection(SpongeState.throwHrzPullGo)
     SpongeChainHrzRelease = FrameCollection(SpongeState.throwHrzRelease)
-    #SpongeChainVrtBegin = FrameCollection(SpongeState)
-    #SpongeChainVrt = FrameCollection()
-    #SpongeChainVrtEnd = FrameCollection()
 
     SpongeChainHrzBegin.insert(Frame(420, 473, 112, 164, Vector(445, 142), 4))
     SpongeChainHrzBegin.insert(Frame(480, 537, 101, 166, Vector(493, 146), 2))
@@ -114,12 +115,53 @@ def initialize_sprite():
     SpongeChainHrzRelease.insert(Frame(897, 922, 117, 167, Vector(910, 148), 4, fist_position=Vector(901, 140)))
     SpongeChainHrzRelease.insert(Frame(850, 885, 116, 165, Vector(872, 146), 2, fist_position=Vector(853, 138)))
     SpongeChainHrzRelease.insert(Frame(926, 960, 113, 168, Vector(948, 143), 2, fist_position=Vector(929, 135)))
-    #SpongeChainVrt.insert(Frame(987, 1000, 4, 554, Vector(), 1))
 
+    # Vertical
+    SpongeChainVrtBegin = FrameCollection(SpongeState.throwVrtBegin)
+    SpongeChainVrt = FrameCollection(SpongeState.throwVrt)
+    ChainThrowVrt = FrameCollection(ChainState.thrownV)
+    SpongeChainVrtPull = FrameCollection(SpongeState.throwVrtPull)
+    ChainVrtPull = FrameCollection(ChainState.pullV)
+    SpongeChainSeedBegin = FrameCollection(SpongeState.seedBegin)
+    SpongeChainSeedEnd = FrameCollection(SpongeState.seedEnd)
+    Seed = FrameCollection(SeedWineState.seed)
+    WineVrtLeft = FrameCollection(SeedWineState.vrtLeft)
+    WineVrtRight = FrameCollection(SeedWineState.vrtRight)
+    WineHrzLeft = FrameCollection(SeedWineState.hrzLeft)
+    WineHrzRight = FrameCollection(SeedWineState.hrzRight)
+
+    SpongeChainVrtEnd = FrameCollection(SpongeState.throwVrtEnd)
+
+    SpongeChainVrtBegin.insert(Frame(730, 789, 22, 80, Vector(753, 56), 4))
+    SpongeChainVrtBegin.insert(Frame(798, 848, 22, 80, Vector(823, 54), 2))
+    SpongeChainVrtBegin.insert(Frame(4, 63, 23, 86, Vector(41, 57), 1, fist_position=Vector(48, 29)))
+    SpongeChainVrt.insert(Frame(4, 63, 23, 86, Vector(41, 57), 1, fist_position=Vector(48, 29)))
+    ChainThrowVrt.insert(Frame(986, 1001, 5, 21, Vector(993, 13), 1))
+    SpongeChainVrtPull.insert(Frame(218, 268, 100, 169, Vector(250, 133), 1, fist_position=Vector(259, 103)))
+    ChainVrtPull.insert(Frame(986, 1001, 5, 21, Vector(993, 13), 1))
+    SpongeChainSeedBegin.insert(Frame(160, 207, 101, 169, Vector(190, 135), 2, fist_position=Vector(199, 105),
+                                      head_position=Vector(192, 113)))
+    SpongeChainSeedBegin.insert(Frame(851, 898, 15, 83, Vector(881, 49), 2, fist_position=Vector(890, 19)))
+    SpongeChainSeedBegin.insert(Frame(105, 152, 104, 172, Vector(135, 138), 2, fist_position=Vector(144, 107)))
+    SpongeChainSeedBegin.insert(Frame(1, 58, 111, 168, Vector(33, 142), 4, fist_position=Vector(43, 115)))
+    SpongeChainSeedBegin.insert(Frame(58, 102, 97, 170, Vector(88, 135), 1, fist_position=Vector(97, 101),
+                                      head_position=Vector(90, 111)))
+    SpongeChainSeedEnd.insert(Frame(58, 102, 97, 170, Vector(88, 135), 1, fist_position=Vector(97, 101),
+                                    head_position=Vector(90, 111)))
+    SpongeChainSeedEnd.insert(Frame(105, 152, 104, 172, Vector(135, 138), 2, fist_position=Vector(144, 107)))
+    SpongeChainSeedEnd.insert(Frame(851, 898, 15, 83, Vector(881, 49), 2, fist_position=Vector(890, 19)))
+    SpongeChainSeedEnd.insert(Frame(160, 207, 101, 169, Vector(190, 135), 2, fist_position=Vector(199, 105),
+                                    head_position=Vector(192, 113)))
+    Seed.insert(Frame(757, 766, 333, 342, Vector(761, 337), 1))
+    WineHrzLeft.insert(Frame(786, 802, 328, 350, Vector(794, 339), 1))
+    WineHrzRight.insert(Frame(876, 892, 331, 353, Vector(884, 342), 1))
+    WineVrtLeft.insert(Frame(883, 905, 355, 371, Vector(894, 363), 1))
+    WineVrtRight.insert(Frame(859, 882, 355, 371, Vector(870, 363), 1))
     # Initializing the sprites
-        # Idle
+    # Idle
     wire_sponge.insert(SpongeIdle)
-        # Intro
+    wire_sponge.chain.insert(ChainIdle)
+    # Intro
     wire_sponge.insert(SpongeIntroChainFall)
     wire_sponge.chain.insert(ChainIntroFall)
     wire_sponge.chain.insert(ChainIntroRelease)
@@ -127,14 +169,14 @@ def initialize_sprite():
     wire_sponge.insert(SpongeIntroChainFallEnd)
     wire_sponge.insert(SpongeIntroSpin)
     wire_sponge.insert(SpongeIntroCharge)
-        # Leap
+    # Leap
     wire_sponge.insert(SpongeLeapBegin)
     wire_sponge.insert(SpongeLeapUp)
     wire_sponge.insert(SpongeLeapDown)
     wire_sponge.insert(SpongeLeapEnd)
-        # Spin
+    # Spin
     wire_sponge.insert(SpongeSpin)
-        # Throw chain Horizontal
+    # Throw chain Horizontal
     wire_sponge.insert(SpongeChainHrzBegin)
     wire_sponge.insert(SpongeChainHrz)
     wire_sponge.chain.insert(ChainThrowHrz)
@@ -143,7 +185,19 @@ def initialize_sprite():
     wire_sponge.insert(SpongeChainHrzPullGo)
     wire_sponge.chain.insert(ChainHrzPullGo)
     wire_sponge.insert(SpongeChainHrzRelease)
-
+    # Throw chain Vertical
+    wire_sponge.insert(SpongeChainVrtBegin)
+    wire_sponge.insert(SpongeChainVrt)
+    wire_sponge.chain.insert(ChainThrowVrt)
+    wire_sponge.insert(SpongeChainVrtPull)
+    wire_sponge.chain.insert(ChainVrtPull)
+    wire_sponge.insert(SpongeChainSeedBegin)
+    wire_sponge.seed_wine_clone.insert(Seed)
+    wire_sponge.seed_wine_clone.insert(WineVrtRight)
+    wire_sponge.seed_wine_clone.insert(WineVrtLeft)
+    wire_sponge.seed_wine_clone.insert(WineHrzRight)
+    wire_sponge.seed_wine_clone.insert(WineHrzLeft)
+    wire_sponge.insert(SpongeChainSeedEnd)
     # Setting initial state
     wire_sponge.setState(SpongeState.introChainFall)
     wire_sponge.chain.setState(ChainState.fallIntro)
@@ -165,7 +219,7 @@ def initialize_sprite():
     DummySpawn.insert(Frame(140, 169, 15, 50, Vector(156, 32), 1))
     DummySpawn.insert(Frame(174, 205, 17, 50, Vector(190, 32), 1))
     DummySpawn.insert(Frame(208, 239, 15, 50, Vector(224, 32), 1))  # 8, End on idle
-    
+
     # Walk Cycle - Note: retain y values from first frame for anchor to avoid vertical position weirdness
     DummyWalk = FrameCollection(DummyState.walk)
 
@@ -212,7 +266,7 @@ def initialize_sprite():
     DummyElec.insert(Frame(270, 302, 314, 331, Vector(286, 331), 1))  # 9
     DummyElec.insert(Frame(34, 64, 314, 349, Vector(50, 331), 1))  # 2
     DummyElec.insert(Frame(4, 32, 312, 349, Vector(20, 331), 1))  # 1
-    
+
     # Explode
     DummyExplode = FrameCollection(DummyState.explode)
 
@@ -234,25 +288,25 @@ def put_sprite(character):
 
         for i in range(sprite_width):
             for j in range(sprite_height):
-                if spriteTop+j <= 0 or spriteLeft+i <= 0:
+                if spriteTop + j <= 0 or spriteLeft + i <= 0:
                     continue
                 img_draw.set_pixel_bytearray(
-                    spriteLeft+i, spriteTop+j,
+                    spriteLeft + i, spriteTop + j,
                     ANDwPixelByte(
-                        img_draw.get_pixel_bytearray(spriteLeft+i, spriteTop+j),
-                        sprmask.get_pixel_bytearray(frame.xLeft+i, frame.yTop+j)
+                        img_draw.get_pixel_bytearray(spriteLeft + i, spriteTop + j),
+                        sprmask.get_pixel_bytearray(frame.xLeft + i, frame.yTop + j)
                     )
                 )
 
         for i in range(sprite_width):
             for j in range(sprite_height):
-                if spriteTop+j <= 0 or spriteLeft+i <= 0:
+                if spriteTop + j <= 0 or spriteLeft + i <= 0:
                     continue
                 img_draw.set_pixel_bytearray(
-                    spriteLeft+i, spriteTop+j,
+                    spriteLeft + i, spriteTop + j,
                     ORwPixelByte(
-                        img_draw.get_pixel_bytearray(spriteLeft+i, spriteTop+j),
-                        sprsht.get_pixel_bytearray(frame.xLeft+i, frame.yTop+j)
+                        img_draw.get_pixel_bytearray(spriteLeft + i, spriteTop + j),
+                        sprsht.get_pixel_bytearray(frame.xLeft + i, frame.yTop + j)
                     )
                 )
     else:
@@ -260,7 +314,7 @@ def put_sprite(character):
         spriteTop = character.position.y - frame.anchor.y + frame.yTop
         for i in range(sprite_width):
             for j in range(sprite_height):
-                if spriteTop+j <= 0 or spriteLeft+i <= 0:
+                if spriteTop + j <= 0 or spriteLeft + i <= 0:
                     continue
                 img_draw.set_pixel_bytearray(
                     spriteLeft + i, spriteTop + j,
@@ -272,7 +326,7 @@ def put_sprite(character):
 
         for i in range(sprite_width):
             for j in range(sprite_height):
-                if spriteTop+j <= 0 or spriteLeft+i <= 0:
+                if spriteTop + j <= 0 or spriteLeft + i <= 0:
                     continue
                 img_draw.set_pixel_bytearray(
                     spriteLeft + i, spriteTop + j,
@@ -287,12 +341,14 @@ def display_img():
     img_draw.data = bytearray(bg.data)
     put_sprite(wire_sponge.chain)
     put_sprite(wire_sponge)
+    for seed in wire_sponge.seed_wines:
+        put_sprite(seed)
     img_display.set_data(
         'RGB',
         img_draw.pitch,
         img_draw.get_bytes()
     )
-    img_display.blit(0,0)
+    img_display.blit(0, 0)
 
 
 class Interface:  # --UI and Controls--
@@ -514,7 +570,7 @@ class Application(pyglet.window.Window):
     def __init__(self):
         super().__init__(width=bg.width, height=bg.height, visible=True, caption="Animator")
         initialize_sprite()
-        pyglet.clock.schedule_interval(self.update, 1/30)
+        pyglet.clock.schedule_interval(self.update, 1 / 30)
         self.interface = Interface(self)  # UI class call, check Controls class
 
     def on_draw(self):
@@ -524,6 +580,8 @@ class Application(pyglet.window.Window):
         self.clear()
         wire_sponge.update()
         wire_sponge.chain.update()
+        for seed in wire_sponge.seed_wines:
+            seed.update()
         display_img()
         self.interface.render()
 
@@ -537,8 +595,9 @@ class Application(pyglet.window.Window):
     Z:                  Thunder Dance
     X:                  Spin Chain
     C:                  Attack with chain (Left/Right)
-    Arrow key up + Z:   Attack with chain (Up)
+    V:                  Attack with chain (Up)
     '''
+
     def on_key_press(self, symbol, modifiers):
         if symbol == key.LEFT and wire_sponge.curState == SpongeState.idle and wire_sponge.on_ground:
             wire_sponge.facing = Facing.left
@@ -563,11 +622,12 @@ class Application(pyglet.window.Window):
         elif symbol == key.X and wire_sponge.on_ground and wire_sponge.curState != SpongeState.spin:
             wire_sponge.setState(SpongeState.spin)
 
-        elif symbol == key.C and (wire_sponge.chain.curState == ChainState.NaN
-                                and wire_sponge.curState != SpongeState.throwHrz
-                                and wire_sponge.curState != SpongeState.throwHrzRelease
-                                and wire_sponge.curState != SpongeState.throwHrzPullGo):
+        elif symbol == key.C and wire_sponge.chain.curState == ChainState.NaN and not wire_sponge.using_chain:
             wire_sponge.setState(SpongeState.throwHrzBegin)
+
+        elif symbol == key.V and wire_sponge.chain.curState == ChainState.NaN and not wire_sponge.using_chain \
+                and wire_sponge.on_ground:
+            wire_sponge.setState(SpongeState.throwVrtBegin)
 
     def on_key_release(self, symbol, modifiers):  # pass if not needed
         if symbol == key.LEFT:

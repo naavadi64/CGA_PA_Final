@@ -96,7 +96,20 @@ class MortalState(Enum):
     idle = 0
     hit = 2
     destruct = 3
-    NaN = -1  # Means not to be drawn
+    NaN = -1  # Means not to be drawn but object still there
+
+
+class SeedWineState(Enum):
+    """
+    State untuk wine and seed
+    """
+    idle = 0
+    NaN = -1
+    seed = 54
+    hrzLeft = 50
+    hrzRight = 51
+    vrtLeft = 52
+    vrtRight = 53
 
 
 class DummyState(Enum):
@@ -298,7 +311,7 @@ class Frame:
     Frame bertindak seperti grid yang memotong dan memisahkan pada bagian image untuk sprite yang akan di apply.
     '''
 
-    def __init__(self, xLeft, xRight, yTop, yBottom, anchor: Vector, time_framing, fist_position=None):
+    def __init__(self, xLeft, xRight, yTop, yBottom, anchor: Vector, time_framing, fist_position=None, head_position=None):
         '''
 
         :param xLeft:
@@ -316,6 +329,7 @@ class Frame:
         self.id = None
         self.time_framing = time_framing
         self.fist = fist_position
+        self.head = head_position
 
 
 class FrameCollection:
@@ -393,7 +407,7 @@ class MortalObject:
 
     def check_collision_vertical(self):
         frame = self.sprites[self.spritesId].frames[self.frameId]
-        if self.position.y + frame.yBottom - frame.anchor.y >= 482 and self.velocity.y > 0:  # Touch platform, or change the code to any
+        if self.position.y + frame.yBottom - frame.anchor.y >= 482 and self.velocity.y > 0:  # Touch platform
             self.position.y = 482 - frame.yBottom + frame.anchor.y
             self.on_equilibrium = Vector(True, True)
             self.velocity.x = 0
@@ -401,7 +415,7 @@ class MortalObject:
             self.on_ground = True
             return True
         if self.position.y + frame.yTop - frame.anchor.y <= 0:  # Touch celing
-            self.position.y = frame.anchor.y - frame.yTop
+            self.position.y = frame.anchor.y - frame.yTop + 1
             self.on_equilibrium = Vector(False, False)
             self.velocity.y = -self.velocity.y
             return True
@@ -415,6 +429,9 @@ class MortalObject:
             else:
                 self.check_collision_horizontal()
         else:
+            if self.acc.x == 0:
+                self.on_equilibrium.x = True
+                return
             self.velocity.x += self.acc.x
             self.check_collision_horizontal()
         # Y axis
@@ -422,6 +439,9 @@ class MortalObject:
             if self.on_ground:
                 self.velocity.y = 0
         else:
+            if self.acc.y == 0:
+                self.on_equilibrium.y = True
+                return
             self.velocity.y += self.acc.y
             self.check_collision_vertical()
 
@@ -437,7 +457,10 @@ class WireSponge(MortalObject):
         self.position = Vector(843, 0)
         self.curState = SpongeState.idle
         self.facing = Facing.left
+        self.using_chain = True
         self.chain = ChainSponge()
+        self.seed_wine_clone = SeedWine()
+        self.seed_wines = []
 
     def calculate_motion(self):
         if not self.on_ground:
@@ -499,6 +522,7 @@ class WireSponge(MortalObject):
                 self.setState(SpongeState.introChainFallEnd)
         elif self.curState == SpongeState.introChainFallEnd:
             if self.curTimeFrame == 0:
+                self.using_chain = False
                 self.setState(SpongeState.introSpin)
         elif self.curState == SpongeState.introSpin:
             if self.curTimeFrame == 0 and self.frameId == 0:
@@ -544,6 +568,7 @@ class WireSponge(MortalObject):
 
         # Throw Chain Horizontally
         elif self.curState == SpongeState.throwHrzBegin:
+            self.using_chain = True
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.throwHrz)
             if self.frameId == 5:
@@ -576,6 +601,7 @@ class WireSponge(MortalObject):
                     self.acc.x = 2
         elif self.curState == SpongeState.throwHrzPullStay:
             if self.chain.curState == ChainState.NaN:
+                self.using_chain = False
                 if not self.on_ground:
                     if self.velocity.y >= 6:
                         self.setState(SpongeState.leapDown)
@@ -592,6 +618,7 @@ class WireSponge(MortalObject):
         elif self.curState == SpongeState.throwHrzRelease:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.on_equilibrium = Vector(True, False)
+                self.using_chain = False
                 if not self.on_ground:
                     if self.facing == Facing.left:
                         self.velocity.x = 10
@@ -605,40 +632,69 @@ class WireSponge(MortalObject):
 
         # Throw Chain Vertically
         elif self.curState == SpongeState.throwVrtBegin:
+            self.using_chain = True
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.throwVrt)
-            if self.frameId == 5:
                 self.chain.setState(ChainState.thrownV)
         elif self.curState == SpongeState.throwVrt:
             if self.chain.curState == ChainState.pullV:
                 self.setState(SpongeState.throwVrtPull)
                 self.on_equilibrium = Vector(True, True)
-                self.velocity.y = -20
+                self.on_ground = False
+                self.velocity.y = -15
         elif self.curState == SpongeState.throwVrtPull:
             if self.chain.curState == ChainState.idle:
+                self.on_equilibrium = Vector(True, True)
+                self.velocity = Vector(0, 0)
                 self.setState(SpongeState.seedBegin)
             elif self.chain.curState == ChainState.NaN:
-                self.velocity.y = 0
-                # later check whether position.y should be adjusted ...
                 self.on_equilibrium = Vector(True, False)
+                self.velocity.y = 0
+                self.acc.y = 1
+                self.acc.x = 0
+                # later check whether position.y should be adjusted ...
+                self.using_chain = False
                 self.setState(SpongeState.leapDown)  # Later check whether there's animation for releasing chain ...
         elif self.curState == SpongeState.seedBegin:
             if self.curTimeFrame == 0 and self.frameId == 0:
-                # <--- here put code to throw seed
+                if self.facing == Facing.left:
+                    vlc_seed = Vector(-10, -10)
+                else:
+                    vlc_seed = Vector(10, -10)
+                frame = self.sprites[self.spritesId].frames[self.frameId]
+                head_pos = Vector(None, None)
+                head_pos.x = self.position.x + frame.head.x - frame.anchor.x
+                head_pos.y = self.position.y + frame.head.y - frame.anchor.y
+                self.add_seed(position=head_pos, velocity=vlc_seed, facing=self.facing)
                 self.setState(SpongeState.seedEnd)
         elif self.curState == SpongeState.seedEnd:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 self.setState(SpongeState.throwVrtPull)
+                self.chain.setState(ChainState.pullV)
+                self.on_equilibrium = Vector(True, True)
+                self.velocity.y = -15
         elif self.curState == SpongeState.throwVrtEnd:
             pass  # Later check whether there's animation for releasing chain ...
 
         # Calculate motion
         self.calculate_motion()
 
+    def add_seed(self, position: Vector, velocity: Vector, facing: Facing):
+        new_seed = SeedWine(position)
+        new_seed.sprites = self.seed_wine_clone.sprites
+        new_seed.getIdSpr = self.seed_wine_clone.getIdSpr
+        new_seed.setState(SeedWineState.seed)
+        new_seed.velocity = velocity
+        new_seed.acc.y = 1
+        new_seed.facing = facing
+        new_seed.on_equilibrium = Vector(True, False)
+        self.seed_wines.append(new_seed)
+
 
 class ChainSponge(MortalObject):
     def __init__(self, position=Vector(None, None)):
         super().__init__(position)
+        self.curState = ChainState.NaN
         self.fist_pos = Vector(None, None)
         self.begin = True
         self.frame_buffer = Frame(None, None, None, None, Vector(None, None), None)
@@ -765,9 +821,9 @@ class ChainSponge(MortalObject):
             # Check whether spike pinned
             spike_posY = self.position.y - frame.anchor.y - frame.yTop
             if spike_posY > 0:
-                frame.anchor.y += 23
-                self.position.y += 23
                 frame.yBottom += 46
+                frame.anchor.y += 23
+                self.position.y -= 23
             else:
                 self.setState(ChainState.pullV)
                 self.revert_frame(sprId, frmId)
@@ -775,15 +831,19 @@ class ChainSponge(MortalObject):
             frame = self.sprites[self.spritesId].frames[self.frameId]
             tail_posY = self.position.y - frame.anchor.y + frame.yBottom
             diff = tail_posY - self.fist_pos.y
-            if self.on_equilibrium.x and not self.on_equilibrium.y:
+            if tail_posY > 0:
                 frame.yBottom -= diff
-                frame.anchor.y -= diff // 2
-                self.position.y -= diff // 2
+                frame.anchor.y += diff // 2
+                self.position.y += diff // 2
             else:
                 self.setState(ChainState.NaN)
+            if tail_posY < 300 and tail_posY > 200:  # change this to random later in specific range
+                self.setState(ChainState.idle)
 
-        if self.velocity.x != 0 and self.velocity.y != 0:
+        if self.velocity.x != 0 and self.on_equilibrium.x:
             self.position.x += self.velocity.x
+
+        if self.velocity.y != 0 and (not self.on_equilibrium.y or self.velocity.x != 0):
             self.position.y += self.velocity.y
 
     def setState(self, state):
@@ -827,3 +887,32 @@ class ChainSponge(MortalObject):
         frame.anchor = self.frame_buffer.anchor
         frame.time_framing = self.frame_buffer.time_framing
         self.begin = True
+
+
+class SeedWine(MortalObject):
+    def __init__(self, position=Vector(0, 0)):
+        super().__init__(position)
+
+    def update(self):
+        self.calculate_motion()
+        if self.on_equilibrium.x and self.velocity.x == 0:
+            self.on_equilibrium = Vector(True, True)
+            self.velocity.y = 0
+            self.velocity.x = 0
+            if self.facing == Facing.left:
+                self.setState(SeedWineState.hrzLeft)
+            else:
+                self.setState(SeedWineState.hrzRight)
+        elif self.on_equilibrium.y and self.velocity.y == 0:
+            self.on_equilibrium = Vector(True, True)
+            self.velocity.y = 0
+            self.velocity.x = 0
+            if self.facing == Facing.left:
+                self.setState(SeedWineState.vrtLeft)
+            else:
+                self.setState(SeedWineState.vrtRight)
+
+    def calculate_motion(self):
+        self.position.x += self.velocity.x
+        self.position.y += self.velocity.y
+        super().calculate_motion()
