@@ -157,7 +157,12 @@ def initialize_sprite():
     WineVrtRight.insert(Frame(859, 882, 355, 371, Vector(870, 363), 1))
 
     # Thunder Dance - 26, 25
+    ThunderBegin = FrameCollection(ThunderState.strikeBegin)
+    ThunderEnd = FrameCollection(ThunderState.strikeEnd)
     SpongeDance = FrameCollection(SpongeState.dance)
+
+    ThunderBegin.insert(Frame(630, 648, 319, 441, Vector(639, 380), 1))
+    ThunderEnd.insert(Frame(662, 691, 320, 442, Vector(676, 381), 3))
 
     SpongeDance.insert(30, 85, 217, 271, Vector(56, 246), 1)
     SpongeDance.insert(93, 148, 220, 271, Vector(119, 246), 1)
@@ -182,12 +187,6 @@ def initialize_sprite():
     SpongeDance.insert(460, 513, 287, 346, Vector(486, 321), 1)
     SpongeDance.insert(520, 573, 287, 346, Vector(546, 321), 1)
     SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
-    # Thunder dance -> tolong
-    ThunderBegin = FrameCollection(ThunderState.strikeBegin)
-    ThunderEnd = FrameCollection(ThunderState.strikeEnd)
-
-    ThunderBegin.insert(Frame(630, 648, 319, 441, Vector(639, 380), 1))
-    ThunderEnd.insert(Frame(662, 691, 320, 442, Vector(676, 381), 3))
 
     # Initializing the sprites
     # Idle
