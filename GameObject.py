@@ -168,6 +168,8 @@ class SpongeState(Enum):
     seedBegin = 400
     seedEnd = 401
     spin = 100
+    thunderBegin = 70
+    thunderEnd = 71
 
 
 class Facing(Enum):
