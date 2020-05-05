@@ -182,6 +182,12 @@ def initialize_sprite():
     SpongeDance.insert(460, 513, 287, 346, Vector(486, 321), 1)
     SpongeDance.insert(520, 573, 287, 346, Vector(546, 321), 1)
     SpongeIdle.insert(Frame(82, 137, 26, 85, Vector(108, 60), 1))
+    # Thunder dance -> tolong
+    ThunderBegin = FrameCollection(ThunderState.strikeBegin)
+    ThunderEnd = FrameCollection(ThunderState.strikeEnd)
+
+    ThunderBegin.insert(Frame(630, 648, 319, 441, Vector(639, 380), 1))
+    ThunderEnd.insert(Frame(662, 691, 320, 442, Vector(676, 381), 3))
 
     # Initializing the sprites
     # Idle
