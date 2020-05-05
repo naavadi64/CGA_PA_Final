@@ -479,6 +479,11 @@ class WireSponge(MortalObject):
 
         self.nextFrame()
 
+        # Check time life for seed and wines
+        for seed in self.seed_wines:
+            if seed.destruct:
+                self.seed_wines.remove(seed)
+
         # Set fist hand position
         frame = self.sprites[self.spritesId].frames[self.frameId]
         if frame.fist is not None:
@@ -892,8 +897,13 @@ class ChainSponge(MortalObject):
 class SeedWine(MortalObject):
     def __init__(self, position=Vector(0, 0)):
         super().__init__(position)
+        self.timing = 0
+        self.destruct = False
 
     def update(self):
+        self.timing += 1
+        if self.timing >= 400:
+            self.destruct = True
         self.calculate_motion()
         if self.on_equilibrium.x and self.velocity.x == 0:
             self.on_equilibrium = Vector(True, True)
