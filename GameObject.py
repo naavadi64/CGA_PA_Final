@@ -164,7 +164,6 @@ class SpongeState(Enum):
     throwVrtBegin = 300
     throwVrt = 301
     throwVrtPull = 302
-    throwVrtEnd = 303
     seedBegin = 400
     seedEnd = 401
     spin = 100
@@ -659,9 +658,8 @@ class WireSponge(MortalObject):
                 self.velocity.y = 0
                 self.acc.y = 1
                 self.acc.x = 0
-                # later check whether position.y should be adjusted ...
                 self.using_chain = False
-                self.setState(SpongeState.leapDown)  # Later check whether there's animation for releasing chain ...
+                self.setState(SpongeState.leapDown)
         elif self.curState == SpongeState.seedBegin:
             if self.curTimeFrame == 0 and self.frameId == 0:
                 if self.facing == Facing.left:
@@ -680,8 +678,6 @@ class WireSponge(MortalObject):
                 self.chain.setState(ChainState.pullV)
                 self.on_equilibrium = Vector(True, True)
                 self.velocity.y = -15
-        elif self.curState == SpongeState.throwVrtEnd:
-            pass  # Later check whether there's animation for releasing chain ...
 
         # Calculate motion
         self.calculate_motion()

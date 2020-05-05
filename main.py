@@ -130,8 +130,6 @@ def initialize_sprite():
     WineHrzLeft = FrameCollection(SeedWineState.hrzLeft)
     WineHrzRight = FrameCollection(SeedWineState.hrzRight)
 
-    SpongeChainVrtEnd = FrameCollection(SpongeState.throwVrtEnd)
-
     SpongeChainVrtBegin.insert(Frame(730, 789, 22, 80, Vector(753, 56), 4))
     SpongeChainVrtBegin.insert(Frame(798, 848, 22, 80, Vector(823, 54), 2))
     SpongeChainVrtBegin.insert(Frame(4, 63, 23, 86, Vector(41, 57), 1, fist_position=Vector(48, 29)))
@@ -157,6 +155,9 @@ def initialize_sprite():
     WineHrzRight.insert(Frame(876, 892, 331, 353, Vector(884, 342), 1))
     WineVrtLeft.insert(Frame(883, 905, 355, 371, Vector(894, 363), 1))
     WineVrtRight.insert(Frame(859, 882, 355, 371, Vector(870, 363), 1))
+
+    # Thunder dance -> tolong
+
     # Initializing the sprites
     # Idle
     wire_sponge.insert(SpongeIdle)
